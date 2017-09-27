@@ -8,10 +8,11 @@ Author: Radeox (radeox@pdp.linux.it)
 import os
 import sys
 import uuid
+import gettext
 
 from time import sleep
 from datetime import datetime
-from settings import token
+from settings import TOKEN, LANG
 
 import telepot
 import zbarlight
@@ -30,9 +31,10 @@ def handle(msg):
         command_input = msg['text']
 
         if command_input == '/start':
-            pass
+            bot.sendMessage(chat_id, _('start_msg'))
 
         if command_input == '/stop':
+            # bot.sendMessage(chat_id, '{0}')
             pass
 
     elif content_type == 'photo':
@@ -50,6 +52,7 @@ def handle(msg):
         try: 
             # Decode QR
             codes = zbarlight.scan_codes('qrcode', image)
+            # TODO Do some shit here
             bot.sendMessage(chat_id, '{0}'.format(codes[0].decode()))
 
         except Exception as e:
@@ -93,9 +96,13 @@ with open(pidfile, 'w') as f:
     f.write(pid)
     f.close()
 
+# Localization
+t = gettext.translation('messages', 'locales', languages=LANG)
+_ = t.gettext
+
 # Start working
 try:
-    bot = telepot.Bot(token)
+    bot = telepot.Bot(TOKEN)
     bot.message_loop(handle)
 
     while 1:

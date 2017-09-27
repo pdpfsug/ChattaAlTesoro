@@ -1,0 +1,2 @@
+msgid "start_msg"
+msgstr "Hi! How you doing?"
