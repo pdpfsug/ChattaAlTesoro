@@ -13,7 +13,7 @@ import sqlite3
 
 from time import sleep
 from datetime import datetime
-from settings import TOKEN, LANG
+from settings import TOKEN, LANG, PASSWORD
 
 import telepot
 import zbarlight
@@ -24,26 +24,66 @@ def handle(msg):
     """
     This function handle all incoming messages from users
     """
+    global PHASE
     content_type, chat_type, chat_id = telepot.glance(msg)
-    chat_id = msg['chat']['id']
 
     if content_type == 'text':
         command_input = msg['text']
 
+        # Start
         if command_input == '/start':
             bot.sendMessage(chat_id, _('start_msg'))
 
+        # Register Team
         elif command_input == '/registerTeam':
-            user_state[chat_id] = 1
-            bot.sendMessage(chat_id, _('team_name_msg'))
+            if PHASE == 0:
+                USER_STATE[chat_id] = 1
+                bot.sendMessage(chat_id, _('team_name_msg'))
+            else:
+                bot.sendMessage(chat_id, _('hunt_started'))
         
-        elif user_state[chat_id] == 1:
+        # Start Treasure Hunt
+        elif command_input == '/start_hunt':
+            USER_STATE[chat_id] = 10
+            bot.sendMessage(chat_id, _('insert_pswd'))
+
+        # Start Treasure Hunt
+        elif command_input == '/stop_hunt':
+            USER_STATE[chat_id] = 11
+            bot.sendMessage(chat_id, _('insert_pswd'))
+        
+        # Register Team
+        elif USER_STATE[chat_id] == 1:
             lname = msg['from']['first_name'] + ' ' + msg['from']['last_name']
 
             if add_team(chat_id, command_input, lname):
                 bot.sendMessage(chat_id, _('registration_success'))
             else:
                 bot.sendMessage(chat_id, _('registration_fail'))
+
+            USER_STATE[chat_id] = 0
+
+        # Start Treasure Hunt
+        elif USER_STATE[chat_id] == 10:
+            if command_input == PASSWORD:
+                bot.sendMessage(chat_id, _('hunt_start'))
+                PHASE = 1
+
+                USER_STATE[chat_id] = 0
+                # TODO SEND TO ALL
+            else:
+                bot.sendMessage(chat_id, _('wrong_pswd'))
+
+        # Stop Tresure Hunt
+        elif USER_STATE[chat_id] == 11:
+            if command_input == PASSWORD:
+                bot.sendMessage(chat_id, _('hunt_stop'))
+                PHASE = 0
+
+                USER_STATE[chat_id] = 0
+                # TODO SEND TO ALL
+            else:
+                bot.sendMessage(chat_id, _('wrong_pswd'))
 
     elif content_type == 'photo':
         msg = msg['photo'][-1]['file_id']
@@ -94,7 +134,7 @@ def add_team(chat_id, team_name, leader_name):
         # Finally close connection
         conn.close()
 
-        return rv
+    return rv
             
 
 def log_print(text):
@@ -112,24 +152,25 @@ def log_print(text):
     log.close()
 
 
-# Main
+### Main ###
 print("Starting TreasureHuntBot...")
 
 # Variables
-user_state = {}
+USER_STATE = {}
+PHASE = 0
 
 # PID file
-pid = str(os.getpid())
-pidfile = "/tmp/TreasureHuntBot.pid"
+PID = str(os.getpid())
+PIDFILE = "/tmp/TreasureHuntBot.pid"
 
 # Check if PID exist
-if os.path.isfile(pidfile):
-    print("%s already exists, exiting!" % pidfile)
+if os.path.isfile(PIDFILE):
+    print("%s already exists, exiting!" % PIDFILE)
     sys.exit()
 
 # Create PID file
-with open(pidfile, 'w') as f:
-    f.write(pid)
+with open(PIDFILE, 'w') as f:
+    f.write(PID)
     f.close()
 
 # Localization
@@ -144,4 +185,4 @@ try:
     while 1:
         sleep(10)
 finally:
-    os.unlink(pidfile)
+    os.unlink(PIDFILE)
