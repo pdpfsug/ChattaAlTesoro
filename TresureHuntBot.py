@@ -1,17 +1,21 @@
 """
 Tresure Hunt - Telegram Bot
 
-Author: Dawid Weglarz
+Author: Radeox (radeox@pdp.linux.it)
 """
 
 #!/bin/python3.6
 import os
 import sys
+import uuid
 
 from time import sleep
 from datetime import datetime
+from settings import token
 
 import telepot
+import zbarlight
+from PIL import Image
 
 
 def handle(msg):
@@ -20,22 +24,48 @@ def handle(msg):
     """
 
     content_type, chat_type, chat_id = telepot.glance(msg)
-
     chat_id = msg['chat']['id']
-    command_input = msg['text']
 
-    if command_input == '/start':
-        pass
+    if content_type == 'text':
+        command_input = msg['text']
 
-    if command_input == '/stop':
-        pass
+        if command_input == '/start':
+            pass
+
+        if command_input == '/stop':
+            pass
+
+    elif content_type == 'photo':
+        msg = msg['photo'][-1]['file_id']
+
+        # Download QR
+        filename = str(uuid.uuid4())
+        bot.download_file(msg, filename)
+
+        # Open QR
+        f = open(filename, 'rb')
+        image = Image.open(f)
+        image.load()
+
+        try: 
+            # Decode QR
+            codes = zbarlight.scan_codes('qrcode', image)
+            bot.sendMessage(chat_id, '{0}'.format(codes[0].decode()))
+
+        except Exception as e:
+            print(e)
+            bot.sendMessage(chat_id, 'QR non riconosciuto! Riprova')
+
+        finally:
+            # Remove used file
+            os.remove(filename)
 
 
 def log_print(text):
     """
-    Write to 'log_file' adding current date
-    Debug purpose
+    Logging functon with date/time
     """
+
     try:
         log = open("log.txt", "a")
     except IOError:
