@@ -6,26 +6,33 @@ conn = sqlite3.connect('treasure_hunt.db')
 c = conn.cursor()
 
 # Create tables
-c.execute('''CREATE TABLE team(
-                chat_id INTEGER PRIMARY KEY,
-                team_name TEXT,
-                leader_name TEXT
-            );''')
+try:
+    query = ('CREATE TABLE team('
+             'chat_id integer primary key,'
+             'team_name text,'
+             'leader_name text);')
+    c.execute(query)
 
-c.execute('''CREATE TABLE riddle(
-                ridd_id INTEGER PRIMARY KEY,
-                solution TEXT,
-                location TEXT
-            );''')
+    query = ('CREATE TABLE riddle('
+             'ridd_id integer primary key autoincrement,'
+             'riddle text,'
+             'solution char,'
+             'latitude int,'
+             'longitude int,'
+             'help_img text);')
+    c.execute(query)
 
-c.execute('''CREATE TABLE team_riddle(
-                chat_id INTEGER,
-                ridd_id INTEGER,
-                is_solved BOOL,
-                date DATE,
-                PRIMARY KEY(chat_id, ridd_id)
-            );''')
-
-conn.commit()
-
-conn.close()
+    query = ('CREATE TABLE solved_riddle('
+             'team integer,'
+             'riddle integer,'
+             'is_solved bool,'
+             'date date,'
+             'foreign key(team) references team(chat_id),'
+             'foreign key(riddle) references riddle(ridd_id),'
+             'primary key(team, riddle));')
+    c.execute(query)
+    conn.commit()
+except Exception as e:
+    print(e)
+finally:
+    conn.close()
