@@ -1,2 +1,0 @@
-msgid "start_msg"
-msgstr "Ciao! Come va?"
