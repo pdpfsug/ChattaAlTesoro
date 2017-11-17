@@ -102,11 +102,12 @@ def handle(msg):
                         bot.sendMessage(chat_id, "Sembra che abbiate già risolto questo indovinello", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                 else:
                     # TODO Lock somehow user on retry
-                    sleep(600)
+                    pass
             else:
+                USER_STATE[chat_id] = 0
                 bot.sendMessage(chat_id, "Mi dispiace ma sembra che la caccia al tesoro sia finita", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
 
-    elif content_type == 'photo' and game_started():
+    elif content_type == 'photo' and is_registred(chat_id) and game_started():
         msg = msg['photo'][-1]['file_id']
 
         # Download QR
@@ -140,7 +141,6 @@ def handle(msg):
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
         except Exception as e:
-            print(e)
             bot.sendMessage(chat_id, 'QR non riconosciuto! Riprova')
         finally:
             # Remove used file
@@ -199,6 +199,22 @@ def add_solved(chat_id, ridd_id):
         # Finally close connection
         conn.close()
     return 1
+
+def is_registred(chat_id):
+    """
+    Check if user is registred as team
+    """
+    # Open DB
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    c.execute('SELECT COUNT(*) FROM team WHERE chat_id == {0}'.format(chat_id))
+    rv = c.fetchone()[0]
+
+    # Finally close connection
+    conn.close()
+
+    return rv
 
 def get_riddle(ridd_id):
     """
