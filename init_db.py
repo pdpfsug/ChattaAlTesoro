@@ -14,8 +14,12 @@ try:
     c.execute(query)
 
     query = ('CREATE TABLE riddle('
-             'ridd_id integer primary key autoincrement,'
+             'ridd_id text primary key,'
              'riddle text,'
+             'answer1 text,'
+             'answer2 text,'
+             'answer3 text,'
+             'answer4 text,'
              'solution char,'
              'latitude int,'
              'longitude int,'

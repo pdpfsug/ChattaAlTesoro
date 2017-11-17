@@ -5,6 +5,4 @@ __pycache__
 
 treasure_hunt.db
 settings.py
-log.txt
-
-*.mo
+img/
