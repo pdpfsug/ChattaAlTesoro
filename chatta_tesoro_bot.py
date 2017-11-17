@@ -40,10 +40,10 @@ def handle(msg):
 
         if command_input == '/start':
             bot.sendMessage(chat_id, "Benvenuto in @ChattaAlTesoroBot!\n"
-                                     "Usa il comando /registerTeam per registrare la tua squadra")
+                                     "Usa il comando /register_team per registrare la tua squadra")
 
         # Register Team
-        elif command_input == '/registerTeam':
+        elif command_input == '/register_team':
             if game_started():
                 bot.sendMessage(chat_id, "Mi dispiace ma la caccia al tesoro è già cominciata...")
             else:
