@@ -13,7 +13,7 @@ import os
 import sys
 import uuid
 import sqlite3
-from time import sleep
+from time import time, sleep
 import telepot
 import zbarlight
 from PIL import Image
@@ -33,6 +33,14 @@ def handle(msg):
         USER_STATE[chat_id] = USER_STATE[chat_id]
     except KeyError:
         USER_STATE[chat_id] = 0
+
+    # Check if user is banned    
+    try:
+        if TEMPS[chat_id]['ban_time'] > TEMPS['time']:
+            bot.sendMessage(chat_id, "Riprova tra {0} secondi".format(TEMPS[chat_id]['ban_time'] - TEMPS['time']))
+            return
+    except KeyError:
+        pass
 
     # Handle message
     if content_type == 'text':
@@ -101,8 +109,9 @@ def handle(msg):
                         # Already solved riddle
                         bot.sendMessage(chat_id, "Sembra che abbiate già risolto questo indovinello", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                 else:
-                    # TODO Lock somehow user on retry
-                    pass
+                    # Ban user for some time on wrong answer
+                    TEMPS[chat_id]['ban_time'] = int(time()) + 60
+                    bot.sendMessage(chat_id, "Errore! Riprova tra 60 secondi")
             else:
                 USER_STATE[chat_id] = 0
                 bot.sendMessage(chat_id, "Mi dispiace ma sembra che la caccia al tesoro sia finita", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
@@ -297,6 +306,7 @@ try:
     bot.message_loop(handle)
 
     while 1:
-        sleep(10)
+        TEMPS['time'] = int(time())
+        sleep(1)
 finally:
     os.unlink(PIDFILE)
