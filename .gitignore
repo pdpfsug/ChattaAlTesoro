@@ -4,6 +4,7 @@ __pycache__
 *.swp
 
 chatta_tesoro.db
+tesoro.lock
 QR.png
 settings.py
 img/

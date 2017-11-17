@@ -16,7 +16,7 @@ try:
 
     query = ('CREATE TABLE riddle('
              'ridd_id text primary key,'
-             'riddle text,'
+             'question text,'
              'answer1 text,'
              'answer2 text,'
              'answer3 text,'
@@ -30,8 +30,6 @@ try:
     query = ('CREATE TABLE solved_riddle('
              'team integer,'
              'riddle integer,'
-             'is_solved bool,'
-             'date date,'
              'foreign key(team) references team(chat_id),'
              'foreign key(riddle) references riddle(ridd_id),'
              'primary key(team, riddle));')

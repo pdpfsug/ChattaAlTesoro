@@ -13,17 +13,10 @@ import os
 import sys
 import uuid
 import sqlite3
-
 from time import sleep
-from settings import TOKEN_ADMIN, DB_NAME, PASSWORD
-
 import qrcode
 import telepot
-
-# Variables
-USER_STATE = {}
-TMP_RIDDLE = {}
-CURRENT_ADMIN = 0
+from settings import TOKEN_ADMIN, DB_NAME, PASSWORD
 
 
 def handle(msg):
@@ -33,6 +26,13 @@ def handle(msg):
     global CURRENT_ADMIN
     content_type, chat_type, chat_id = telepot.glance(msg)
 
+    # Init user state if don't exist
+    try:
+        USER_STATE[chat_id] = USER_STATE[chat_id]
+    except KeyError:
+        USER_STATE[chat_id] = 0
+
+    # Handle message
     if content_type == 'text':
         command_input = msg['text']
 
@@ -63,14 +63,14 @@ def handle(msg):
 
             # Start Treasure Hunt
             elif command_input == '/start_hunt':
-                with open('maker_hunt.lock', 'w') as f:
+                with open('tesoro.lock', 'w') as f:
                     f.write(PID)
                     f.close()
                 bot.sendMessage(chat_id, "La caccia al tesoro è iniziata!")
 
             # Stop Treasure Hunt
             elif command_input == '/stop_hunt':
-                os.unlink('maker_hunt.lock')
+                os.unlink('tesoro.lock')
                 bot.sendMessage(chat_id, "La caccia la tesoro è finita!")
 
             # Add new riddle
@@ -84,11 +84,11 @@ def handle(msg):
                 USER_STATE[chat_id] = 3
                 bot.sendMessage(chat_id, "Inserisci le possibili risposte e la soluzione.\n"
                                          "Formato:\n"
-                                         "Risposta1\n"
-                                         "Risposta2\n"
-                                         "Risposta3\n"
-                                         "Risposta4\n"
-                                         "3")
+                                         "A. Risposta1\n"
+                                         "B. Risposta2\n"
+                                         "C. Risposta3\n"
+                                         "D. Risposta4\n"
+                                         "C")
 
             # New riddle anwers
             elif USER_STATE[chat_id] == 3:
@@ -165,7 +165,7 @@ def add_riddle(id, text, answer1, answer2, answer3, answer4, solution, lat=None,
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    query = ('INSERT INTO riddle(ridd_id, riddle, answer1, answer2, answer3, answer4, solution, latitude, longitude, help_img) '
+    query = ('INSERT INTO riddle(ridd_id, question, answer1, answer2, answer3, answer4, solution, latitude, longitude, help_img) '
              'VALUES("{0}", "{1}", "{2}", "{3}", "{4}", "{5}",'
              '"{6}", "{7}", "{8}", "{9}")'.format(id,
                                                   text,
@@ -197,6 +197,11 @@ PIDFILE = "/tmp/mk_cat_admin.pid"
 if os.path.isfile(PIDFILE):
     print("%s already exists, exiting!" % PIDFILE)
     sys.exit()
+
+# Variables
+USER_STATE = {}
+TMP_RIDDLE = {}
+CURRENT_ADMIN = 0
 
 # Create PID file
 with open(PIDFILE, 'w') as f:
