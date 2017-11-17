@@ -3,7 +3,7 @@ __pycache__
 *.pyc
 *.swp
 
-treasure_hunt.db
+chatta_tesoro.db
 QR.png
 settings.py
 img/

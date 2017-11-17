@@ -1,8 +1,9 @@
 #!/bin/python3.6
 import sqlite3
+from settings import DB_NAME
 
 # Open DB
-conn = sqlite3.connect('treasure_hunt.db')
+conn = sqlite3.connect(DB_NAME)
 c = conn.cursor()
 
 # Create tables

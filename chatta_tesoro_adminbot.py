@@ -1,5 +1,5 @@
 """
-Makerspace Tresure Hunt Bot
+Makerspace - Chatta al Tesoro
 Admin Bot
 
 This project is splitted in 2 bots, one for the preparation of the game
@@ -41,7 +41,7 @@ def handle(msg):
             # Start with authentication
             if command_input == '/start':
                 USER_STATE[chat_id] = 1
-                bot.sendMessage(chat_id, "Ciao! Questo è il bot di configurazione di @NAME.\n"
+                bot.sendMessage(chat_id, "Ciao! Questo è il bot di configurazione di @ChattaAlTesoroBot.\n"
                                          "Inserisci la password.")
             elif command_input == PASSWORD and USER_STATE[chat_id] == 1:
                 # Set admin
@@ -187,11 +187,11 @@ def add_riddle(id, text, answer1, answer2, answer3, answer4, solution, lat=None,
 
 
 ### Main ###
-print("Starting Makerspace-TreasureHunt (Admin) Bot...")
+print("Starting Makerspace - ChattaAlTesoroAdminBot...")
 
 # PID file
 PID = str(os.getpid())
-PIDFILE = "/tmp/treasureadmin.pid"
+PIDFILE = "/tmp/mk_cat_admin.pid"
 
 # Check if PID exist
 if os.path.isfile(PIDFILE):
