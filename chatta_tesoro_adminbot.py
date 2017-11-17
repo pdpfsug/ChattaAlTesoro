@@ -133,7 +133,7 @@ def handle(msg):
 
     # Got riddle help image
     elif content_type == 'photo' and USER_STATE[chat_id] == 4:
-        if os.path.isfile('img'):
+        if not os.path.isfile('img'):
             os.mkdir('img')
 
         # Store img
