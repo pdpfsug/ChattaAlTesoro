@@ -4,5 +4,6 @@ __pycache__
 *.swp
 
 treasure_hunt.db
+QR.png
 settings.py
 img/
