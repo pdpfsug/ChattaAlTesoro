@@ -78,6 +78,11 @@ def handle(msg):
                 USER_STATE[chat_id] = 2
                 bot.sendMessage(chat_id, "Inserisci l'indovinello")
 
+            # Add new riddle
+            elif command_input == '/reset_game':
+                reset_game()
+                bot.sendMessage(chat_id, "Dati di gioco eliminati!")
+
             # New riddle text
             elif USER_STATE[chat_id] == 2:
                 TMP_RIDDLE['text'] = command_input
@@ -178,6 +183,31 @@ def add_riddle(id, text, answer1, answer2, answer3, answer4, solution, lat=None,
                                                   long,
                                                   img_name))
 
+    c.execute(query)
+    conn.commit()
+
+    # Finally close connection
+    conn.close()
+    return 1
+
+def reset_game():
+    """
+    Reset old game data
+    """
+    # Open DB
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    # Delete old teams
+    query = ('DELETE FROM team')
+    c.execute(query)
+
+    # Delete old riddles
+    query = ('DELETE FROM riddle')
+    c.execute(query)
+
+    # Delete old solved_riddles
+    query = ('DELETE FROM solved_riddle')
     c.execute(query)
     conn.commit()
 
