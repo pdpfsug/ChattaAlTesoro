@@ -24,7 +24,10 @@ try:
              'solution char,'
              'latitude int,'
              'longitude int,'
-             'help_img text);')
+             'help_img text,'
+             'msg_success text,'
+             'msg_error text,'
+             'sorting integer)');
     c.execute(query)
 
     query = ('CREATE TABLE solved_riddle('
