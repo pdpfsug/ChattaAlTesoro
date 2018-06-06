@@ -27,6 +27,7 @@ def handle(msg):
     This function handle all incoming messages from users
     """
     content_type, chat_type, chat_id = telepot.glance(msg)
+    print("Messaggio: %s" % msg)
 
     # Init user state if don't exist
     try:
@@ -88,7 +89,7 @@ def handle(msg):
                     USER_STATE[chat_id] = 0
 
                     if add_solved(chat_id, ridd_id):
-                        # Get next riddle postion
+                        # Get next riddle position
                         data = get_next_riddle_location(chat_id)
 
                         if data:
@@ -98,8 +99,8 @@ def handle(msg):
 
                             bot.sendMessage(chat_id, "Complimenti! Ecco dove troverai il prossimo QR")
                             if help_img != '':
-                                f = open('img/' + help_img, 'rb')
-                                bot.sendPhoto(chat_id, f, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                                with open('img/' + help_img, 'rb') as f:
+                                    bot.sendPhoto(chat_id, f, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                             else:
                                 bot.sendLocation(chat_id, latitude, longitude, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                         else:
@@ -124,9 +125,9 @@ def handle(msg):
         bot.download_file(msg, filename)
 
         # Open QR
-        f = open(filename, 'rb')
-        image = Image.open(f)
-        image.load()
+        with open(filename, 'rb') as f:
+            image = Image.open(f)
+            image.load()
 
         try: 
             # Decode QR
@@ -252,24 +253,22 @@ def get_next_riddle_location(chat_id):
     c = conn.cursor()
 
     # Get number of not solved riddles
-    query = ('SELECT COUNT(*) '
+    query = ('SELECT MIN(sorting) as next_id '
              'FROM riddle '
              'WHERE ridd_id NOT IN '
              '(SELECT riddle FROM solved_riddle WHERE team = {0})'.format(chat_id))
     c.execute(query)
-    ridd_max = c.fetchone()[0]
+    next_ridd_id = c.fetchone()[0]
 
     # There is still something to find
-    if ridd_max > 0:
-        next_ridd = randint(0, ridd_max - 1) 
+    if next_ridd_id:
 
         query = ('SELECT latitude, longitude, help_img '
                 'FROM riddle '
-                'WHERE ridd_id NOT IN '
-                '(SELECT riddle FROM solved_riddle WHERE team = {0})'.format(chat_id))
+                'WHERE sorting = {0}'.format(next_ridd_id))
         c.execute(query)
 
-        data = c.fetchall()[next_ridd]
+        data = c.fetchone()
 
         # Finally close connection
         conn.close()
