@@ -97,7 +97,9 @@ def handle(msg):
                             longitude = data[1]
                             help_img = data[2]
 
-                            bot.sendMessage(chat_id, "Complimenti! Ecco dove troverai il prossimo QR")
+                            riddle = get_riddle(ridd_id)
+
+                            bot.sendMessage(chat_id, riddle[6])
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
                                     bot.sendPhoto(chat_id, f, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
@@ -112,7 +114,9 @@ def handle(msg):
                 else:
                     # Ban user for some time on wrong answer
                     TEMPS[chat_id]['ban_time'] = int(time()) + 60
-                    bot.sendMessage(chat_id, "Errore! Riprova tra 60 secondi")
+                    riddle = get_riddle(ridd_id)
+                    bot.sendMessage(chat_id, riddle[7])
+                    bot.sendMessage(chat_id, "Riprova tra 60 secondi")
             else:
                 USER_STATE[chat_id] = 0
                 bot.sendMessage(chat_id, "Mi dispiace ma sembra che la caccia al tesoro sia finita", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
@@ -151,6 +155,7 @@ def handle(msg):
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
         except Exception as e:
+            raise
             bot.sendMessage(chat_id, 'QR non riconosciuto! Riprova')
         finally:
             # Remove used file
@@ -234,7 +239,7 @@ def get_riddle(ridd_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    query = ('SELECT question, answer1, answer2, answer3, answer4, solution '
+    query = ('SELECT question, answer1, answer2, answer3, answer4, solution, msg_success, msg_error '
              'FROM riddle WHERE ridd_id == "{0}"'.format(ridd_id))
     c.execute(query)
     riddle = c.fetchone()

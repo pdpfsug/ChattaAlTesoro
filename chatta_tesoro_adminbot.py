@@ -113,6 +113,18 @@ def handle(msg):
                 TMP_RIDDLE['ans4'] = split[3]
                 TMP_RIDDLE['sol'] = split[4]
 
+                USER_STATE[chat_id] = 40
+                
+                bot.sendMessage(chat_id, "Cosa devo dire al giocatore quando risponde correttamente?")
+            
+            elif USER_STATE[chat_id] == 40:
+                TMP_RIDDLE['msg_success'] = command_input
+                
+                USER_STATE[chat_id] = 41
+                bot.sendMessage(chat_id, "Cosa devo dire al giocatore quando sbaglia?")
+                
+            elif USER_STATE[chat_id] == 41:
+                TMP_RIDDLE['msg_error'] = command_input
                 USER_STATE[chat_id] = 4
                 bot.sendMessage(chat_id, "Mandami la posizione prevista per il QR o un immagine d'aiuto")
 
@@ -127,7 +139,10 @@ def handle(msg):
                            TMP_RIDDLE['sol'],
                            TMP_RIDDLE['lat'],
                            TMP_RIDDLE['lon'],
-                           TMP_RIDDLE['img'])
+                           TMP_RIDDLE['img'],
+                           msg_success=TMP_RIDDLE['msg_success'],
+                           msg_error=TMP_RIDDLE['msg_error']
+                           )
 
                 USER_STATE[chat_id] = 0
                 bot.sendMessage(chat_id, "Indovinello '%(text)s' aggiunto con successo! Ecco il QR" % TMP_RIDDLE)
@@ -240,9 +255,11 @@ def do_csv_export(chat_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("SELECT * FROM riddle ORDER BY sorting ASC")
-    with io.BytesIO() as csvfile:
+    with io.StringIO() as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerows(c.fetchall())
+        result = c.fetchall()
+        print(repr(result))
+        writer.writerows(result)
         csvfile.seek(0)
         bot.sendDocument(chat_id, ('chatta_al_tesoro.csv', csvfile))
     c.close()
@@ -253,7 +270,7 @@ def do_csv_import(csvfile):
     """
     """
     csvfile.seek(0)
-    reader = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
+    reader = csv.reader(csvfile, delimiter=',') #, quoting=csv.QUOTE_NONNUMERIC)
     for i, row in enumerate(reader):
         if not i: 
             # skip the header row
