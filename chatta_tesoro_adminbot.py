@@ -12,11 +12,19 @@ Author: Radeox (radeox@pdp.linux.it)
 import os
 import sys
 import uuid
+import io
+import csv
+import urllib.request
 import sqlite3
 from time import sleep
 import qrcode
 import telepot
 from settings import TOKEN_ADMIN, DB_NAME, PASSWORD
+
+# Variables
+USER_STATE = {}
+TMP_RIDDLE = {}
+CURRENT_ADMIN = 0
 
 
 def handle(msg):
@@ -118,35 +126,34 @@ def handle(msg):
                            TMP_RIDDLE['ans4'],
                            TMP_RIDDLE['sol'],
                            TMP_RIDDLE['lat'],
-                           TMP_RIDDLE['long'],
+                           TMP_RIDDLE['lon'],
                            TMP_RIDDLE['img'])
 
                 USER_STATE[chat_id] = 0
-                bot.sendMessage(chat_id, "Indovinello aggiunto con successo! Ecco il QR")
-
-                # Return QR
-                with open('QR.png', 'wb') as f:
-                    img = qrcode.make(ridd_id)
-                    img.save(f)
-
-                with open('QR.png', 'rb') as f:
+                bot.sendMessage(chat_id, "Indovinello '%(text)s' aggiunto con successo! Ecco il QR" % TMP_RIDDLE)
+                # Send QR
+                with open('img/qr-%s.png' % ridd_id, 'rb') as f:
                     bot.sendPhoto(chat_id, f)
 
             elif command_input == '/cancel' and USER_STATE[chat_id] == 5:
                 USER_STATE[chat_id] = 0
                 bot.sendMessage(chat_id, "Operazione annullata")
+            elif command_input == '/import' and USER_STATE[chat_id] == 0:
+                USER_STATE[chat_id] = 10  # ready to get import file
+                bot.sendMessage(chat_id, "Questa importazione resetterà il gioco e importerà tutti i quiz.\nAllega il file da cui importare la vita, l'Universo e tutto quanto")
+            elif command_input == '/export' and USER_STATE[chat_id] == 0:
+                do_csv_export(chat_id)
+                bot.sendMessage(chat_id, "Hai scaricato il file della configurazione della chat")
 
     # Got riddle help image
     elif content_type == 'photo' and USER_STATE[chat_id] == 4:
-        if not os.path.isdir('img'):
-            os.mkdir('img')
 
         # Store img
         img_name = str(uuid.uuid4()) + '.png'
         bot.download_file(msg['photo'][-1]['file_id'], "img/" + img_name)
         TMP_RIDDLE['img'] = img_name
         TMP_RIDDLE['lat'] = ""
-        TMP_RIDDLE['long'] = ""
+        TMP_RIDDLE['lon'] = ""
 
         USER_STATE[chat_id] = 5
         bot.sendMessage(chat_id, "Inserisci /done per confermare o /cancel per annulare")
@@ -155,14 +162,24 @@ def handle(msg):
     elif content_type == 'location' and USER_STATE[chat_id] == 4:
         TMP_RIDDLE['img'] = ""
         TMP_RIDDLE['lat'] = msg['location']['latitude']
-        TMP_RIDDLE['long'] = msg['location']['longitude']
+        TMP_RIDDLE['lon'] = msg['location']['longitude']
 
         USER_STATE[chat_id] = 5
         bot.sendMessage(chat_id, "Inserisci /done per confermare o /cancel per annulare")
 
+    elif content_type == 'document' and USER_STATE[chat_id] == 10:
+        reset_game()
+        with open('t.csv', 'wb') as csvfile:
+            bot.download_file(msg['document']['file_id'], csvfile)
+        with open('t.csv', 'r', encoding='utf-8') as csvfile:
+            do_csv_import(csvfile)
+
+        USER_STATE[chat_id] = 0
+        bot.sendMessage(chat_id, "Importazione quiz terminata correttamente!")
+
 
 # Database related functions
-def add_riddle(id, text, answer1, answer2, answer3, answer4, solution, lat=None, long=None, img_name=None):
+def add_riddle(ridd_id, text, answer1, answer2, answer3, answer4, solution, lat=None, lon=None, img_name=None, msg_success='', msg_error='', sorting=None):
     """
     Add a new riddle in the database
     """
@@ -170,24 +187,27 @@ def add_riddle(id, text, answer1, answer2, answer3, answer4, solution, lat=None,
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    query = ('INSERT INTO riddle(ridd_id, question, answer1, answer2, answer3, answer4, solution, latitude, longitude, help_img) '
+    query = ('INSERT INTO riddle(ridd_id, question, answer1, answer2, answer3, answer4, '
+             'solution, latitude, longitude, help_img, msg_success, msg_error, sorting) '
              'VALUES("{0}", "{1}", "{2}", "{3}", "{4}", "{5}",'
-             '"{6}", "{7}", "{8}", "{9}")'.format(id,
-                                                  text,
-                                                  answer1,
-                                                  answer2,
-                                                  answer3,
-                                                  answer4,
-                                                  solution,
-                                                  lat,
-                                                  long,
-                                                  img_name))
+             '"{6}", "{7}", "{8}", "{9}", "{10}", "{11}", "{12}")'.format(ridd_id,
+                                                  text, answer1, answer2, answer3, answer4,
+                                                  solution, lat, lon, img_name,
+                                                  msg_success, msg_error, sorting))
 
     c.execute(query)
     conn.commit()
 
-    # Finally close connection
+    # At the end close connection
     conn.close()
+
+    # Create the QR code with a well-known name related to riddle
+    if not os.path.isfile('img/qr-%s.png' % ridd_id):
+        with open('img/qr-%s.png' % ridd_id, 'wb') as f:
+            img = qrcode.make(ridd_id)
+            img.save(f)
+
+
     return 1
 
 def reset_game():
@@ -216,34 +236,75 @@ def reset_game():
     return 1
 
 
+def do_csv_export(chat_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT * FROM riddle ORDER BY sorting ASC")
+    with io.BytesIO() as csvfile:
+        writer = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerows(c.fetchall())
+        csvfile.seek(0)
+        bot.sendDocument(chat_id, ('chatta_al_tesoro.csv', csvfile))
+    c.close()
+    conn.close()
+    return csvfile
+
+def do_csv_import(csvfile):
+    """
+    """
+    csvfile.seek(0)
+    reader = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
+    for i, row in enumerate(reader):
+        if not i: 
+            # skip the header row
+            continue
+        
+        (ridd_id, text, answer1, answer2, answer3, answer4, 
+            solution, lat, lon, img_name, msg_success, msg_error, sorting) = row
+
+        # Create the new riddle, keep values if found,
+        # create otherwise
+        ridd_id = ridd_id or str(uuid.uuid4())
+        if img_name.startswith('https://') or img_name.startswith('http://'):
+            # Image is a link so download and save it to the img/ folder
+            img_url = img_name
+            img_name = str(uuid.uuid4()) + '.png'
+            urllib.request.urlretrieve(img_url, 'img/%s' % img_name)
+
+        add_riddle(ridd_id, text, answer1, answer2, answer3, answer4,
+            solution, lat, lon, img_name, msg_success, msg_error, sorting)
+        
+
 ### Main ###
-print("Starting Makerspace - ChattaAlTesoroAdminBot...")
+if __name__ == "__main__":
 
-# PID file
-PID = str(os.getpid())
-PIDFILE = "/tmp/mk_cat_admin.pid"
+    print("Starting Makerspace - ChattaAlTesoroAdminBot...")
 
-# Check if PID exist
-if os.path.isfile(PIDFILE):
-    print("%s already exists, exiting!" % PIDFILE)
-    sys.exit()
+    # PID file
+    PID = str(os.getpid())
+    PIDFILE = "/tmp/mk_cat_admin.pid"
 
-# Variables
-USER_STATE = {}
-TMP_RIDDLE = {}
-CURRENT_ADMIN = 0
+    # Check if PID exist
+    if os.path.isfile(PIDFILE):
+        print("%s already exists, exiting!" % PIDFILE)
+        sys.exit()
 
-# Create PID file
-with open(PIDFILE, 'w') as f:
-    f.write(PID)
-    f.close()
+    # Create PID file
+    with open(PIDFILE, 'w') as f:
+        f.write(PID)
+        f.close()
 
-# Start working
-try:
-    bot = telepot.Bot(TOKEN_ADMIN)
-    bot.message_loop(handle)
+    if not os.path.isdir('img'):
+        os.mkdir('img')
 
-    while 1:
-        sleep(10)
-finally:
-    os.unlink(PIDFILE)
+    # Start working
+    try:
+        bot = telepot.Bot(TOKEN_ADMIN)
+        bot.message_loop(handle)
+
+        while 1:
+            sleep(10)
+    finally:
+        os.unlink(PIDFILE)
+
+
