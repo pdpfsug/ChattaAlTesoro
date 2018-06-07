@@ -125,12 +125,12 @@ def handle(msg):
                 bot.sendMessage(chat_id, "Indovinello aggiunto con successo! Ecco il QR")
 
                 # Return QR
-                f = open('QR.png', 'wb')
-                img = qrcode.make(ridd_id)
-                img.save(f)
+                with open('QR.png', 'wb') as f:
+                    img = qrcode.make(ridd_id)
+                    img.save(f)
 
-                f = open('QR.png', 'rb')
-                bot.sendPhoto(chat_id, f)
+                with open('QR.png', 'rb') as f:
+                    bot.sendPhoto(chat_id, f)
 
             elif command_input == '/cancel' and USER_STATE[chat_id] == 5:
                 USER_STATE[chat_id] = 0
