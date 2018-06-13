@@ -16,6 +16,7 @@ try:
 
     query = ('CREATE TABLE riddle('
              'ridd_id text primary key,'
+             'kind text,'
              'question text,'
              'answer1 text,'
              'answer2 text,'

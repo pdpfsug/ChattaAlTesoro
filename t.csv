@@ -1,4 +1,5 @@
-"RIDDLE_ID","QUESTION","ANSWER1","ANSWER2","ANSWER3","ANSWER4","SOLUTION","LATITUDE","LONGITUDE","HELP_IMG","MSG_SUCCESS","MSG_ERROR","SORTING"
-,"Quanto fa 2+2?","A. mille","B. 4","C. 3,14","D. 42","B",,,"https://transfer.sh/ZC8nl/MakerCampAffiliateSite.png","Bravo! Ora vai",,1
-,"Qual è la capitale dell'Albania?","A. Tokyo","B. Roma","C. Dublino","D. Tirana","D",,,"https://transfer.sh/uujrV/LogoPDP-trasparente.png","Bene, prosegui!","Somaro! Ripeti tra poco",2
-,"Chi ha vinto il campionato di serie A?","A. Tim","B. Real Madrid","C. Juventus","D. Napoli","C",,,"https://transfer.sh/Co9Cd/nWYnQ.png","Campione!",,3
+RIDDLE_ID,KIND,QUESTION,ANSWER1,ANSWER2,ANSWER3,ANSWER4,SOLUTION,LATITUDE,LONGITUDE,HELP_IMG,MSG_SUCCESS,MSG_ERROR,SORTING
+,multiple,Quanto fa 40+2?,A. mille,B. 4,"C. 3,14",D. 42,D,,,https://transfer.sh/ZC8nl/MakerCampAffiliateSite.png,Bravo! Ora vai,,1
+,multiple,Qual è la capitale dell'Albania?,A. Tokyo,B. Roma,C. Dublino,D. Tirana,D,,,https://transfer.sh/uujrV/LogoPDP-trasparente.png,"Bene, prosegui!",Somaro! Ripeti tra poco,2
+,multiple,Chi ha vinto il campionato di serie A?,A. Tim,B. Real Madrid,C. Juventus,D. Napoli,C,,,https://transfer.sh/Co9Cd/nWYnQ.png,Campione!,,3
+,open,Chi vince il palio nel 2018?,,,,,cervara,,,https://transfer.sh/12CH3c/download.jpeg,,SBAGLIATOOOOO,4

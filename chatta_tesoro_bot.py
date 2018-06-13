@@ -83,8 +83,16 @@ def handle(msg):
                 # Recover solution
                 solution = TEMPS[chat_id]['solution']
                 ridd_id = TEMPS[chat_id]['ridd_id']
+                riddle = get_riddle(ridd_id)
 
-                if command_input[0] == solution:
+                kind = riddle[1]
+
+                if kind == 'multiple':
+                    user_given_solution = command_input[0]
+                elif kind == 'open':
+                    user_given_solution = command_input
+                
+                if user_given_solution.upper() == solution.upper():
                     # Mark as solved
                     USER_STATE[chat_id] = 0
 
@@ -97,9 +105,10 @@ def handle(msg):
                             longitude = data[1]
                             help_img = data[2]
 
-                            riddle = get_riddle(ridd_id)
-
-                            bot.sendMessage(chat_id, riddle[6])
+                            answer = riddle[7]
+                            if not answer:
+                                answer = 'Esatto!'
+                            bot.sendMessage(chat_id, answer)
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
                                     bot.sendPhoto(chat_id, f, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
@@ -115,7 +124,10 @@ def handle(msg):
                     # Ban user for some time on wrong answer
                     TEMPS[chat_id]['ban_time'] = int(time()) + 60
                     riddle = get_riddle(ridd_id)
-                    bot.sendMessage(chat_id, riddle[7])
+                    error_message = riddle[8]
+                    if not error_message:
+                        error_message = 'Sbagliato!'
+                    bot.sendMessage(chat_id, error_message)
                     bot.sendMessage(chat_id, "Riprova tra 60 secondi")
             else:
                 USER_STATE[chat_id] = 0
@@ -147,10 +159,13 @@ def handle(msg):
                 # Save answers for next message
                 TEMPS[chat_id] = {}
                 TEMPS[chat_id]['ridd_id'] = ridd_id
-                TEMPS[chat_id]['solution'] = riddle[5]
+                TEMPS[chat_id]['solution'] = riddle[6]
+                print(TEMPS)
 
                 # Prepare answer keyboard
-                markup = ReplyKeyboardMarkup(keyboard=[[riddle[1]], [riddle[2]], [riddle[3]], [riddle[4]]])
+                markup = ReplyKeyboardMarkup(keyboard=[[riddle[2]], [riddle[3]], [riddle[4]], [riddle[5]]])
+                if riddle[1] == 'open':
+                    markup = None
                 bot.sendMessage(chat_id, riddle[0], reply_markup=markup)
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
@@ -239,7 +254,7 @@ def get_riddle(ridd_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    query = ('SELECT question, answer1, answer2, answer3, answer4, solution, msg_success, msg_error '
+    query = ('SELECT question, kind, answer1, answer2, answer3, answer4, solution, msg_success, msg_error '
              'FROM riddle WHERE ridd_id == "{0}"'.format(ridd_id))
     c.execute(query)
     riddle = c.fetchone()

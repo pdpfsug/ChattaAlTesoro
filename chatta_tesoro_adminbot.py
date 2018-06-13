@@ -131,6 +131,7 @@ def handle(msg):
             elif command_input == '/done' and USER_STATE[chat_id] == 5:
                 ridd_id = str(uuid.uuid4())
                 add_riddle(ridd_id,
+                           # TODO: aggiungere nuovo parametro KIND
                            TMP_RIDDLE['text'],
                            TMP_RIDDLE['ans1'],
                            TMP_RIDDLE['ans2'],
@@ -194,7 +195,7 @@ def handle(msg):
 
 
 # Database related functions
-def add_riddle(ridd_id, text, answer1, answer2, answer3, answer4, solution, lat=None, lon=None, img_name=None, msg_success='', msg_error='', sorting=None):
+def add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, solution, lat=None, lon=None, img_name=None, msg_success='', msg_error='', sorting=None):
     """
     Add a new riddle in the database
     """
@@ -202,10 +203,10 @@ def add_riddle(ridd_id, text, answer1, answer2, answer3, answer4, solution, lat=
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    query = ('INSERT INTO riddle(ridd_id, question, answer1, answer2, answer3, answer4, '
+    query = ('INSERT INTO riddle(ridd_id, kind, question, answer1, answer2, answer3, answer4, '
              'solution, latitude, longitude, help_img, msg_success, msg_error, sorting) '
              'VALUES("{0}", "{1}", "{2}", "{3}", "{4}", "{5}",'
-             '"{6}", "{7}", "{8}", "{9}", "{10}", "{11}", "{12}")'.format(ridd_id,
+             '"{6}", "{7}", "{8}", "{9}", "{10}", "{11}", "{12}", "{13}")'.format(ridd_id, kind,
                                                   text, answer1, answer2, answer3, answer4,
                                                   solution, lat, lon, img_name,
                                                   msg_success, msg_error, sorting))
@@ -276,7 +277,7 @@ def do_csv_import(csvfile):
             # skip the header row
             continue
         
-        (ridd_id, text, answer1, answer2, answer3, answer4, 
+        (ridd_id, kind, text, answer1, answer2, answer3, answer4, 
             solution, lat, lon, img_name, msg_success, msg_error, sorting) = row
 
         # Create the new riddle, keep values if found,
@@ -288,7 +289,7 @@ def do_csv_import(csvfile):
             img_name = str(uuid.uuid4()) + '.png'
             urllib.request.urlretrieve(img_url, 'img/%s' % img_name)
 
-        add_riddle(ridd_id, text, answer1, answer2, answer3, answer4,
+        add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4,
             solution, lat, lon, img_name, msg_success, msg_error, sorting)
         
 
