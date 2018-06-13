@@ -105,7 +105,7 @@ def handle(msg):
                             longitude = data[1]
                             help_img = data[2]
 
-                            answer = riddle[7]
+                            answer = riddle[9]
                             if not answer:
                                 answer = 'Esatto!'
                             bot.sendMessage(chat_id, answer)
@@ -124,7 +124,7 @@ def handle(msg):
                     # Ban user for some time on wrong answer
                     TEMPS[chat_id]['ban_time'] = int(time()) + 60
                     riddle = get_riddle(ridd_id)
-                    error_message = riddle[8]
+                    error_message = riddle[10]
                     if not error_message:
                         error_message = 'Sbagliato!'
                     bot.sendMessage(chat_id, error_message)
@@ -159,11 +159,13 @@ def handle(msg):
                 # Save answers for next message
                 TEMPS[chat_id] = {}
                 TEMPS[chat_id]['ridd_id'] = ridd_id
-                TEMPS[chat_id]['solution'] = riddle[6]
+                TEMPS[chat_id]['solution'] = riddle[8]
                 print(TEMPS)
 
                 # Prepare answer keyboard
-                markup = ReplyKeyboardMarkup(keyboard=[[riddle[2]], [riddle[3]], [riddle[4]], [riddle[5]]])
+                markup = ReplyKeyboardMarkup(keyboard=[
+                    [riddle[x]] for x in range(2,8) if riddle[x]
+                ])
                 if riddle[1] == 'open':
                     markup = None
                 bot.sendMessage(chat_id, riddle[0], reply_markup=markup)
@@ -254,7 +256,7 @@ def get_riddle(ridd_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    query = ('SELECT question, kind, answer1, answer2, answer3, answer4, solution, msg_success, msg_error '
+    query = ('SELECT question, kind, answer1, answer2, answer3, answer4, answer5, answer6, solution, msg_success, msg_error '
              'FROM riddle WHERE ridd_id == "{0}"'.format(ridd_id))
     c.execute(query)
     riddle = c.fetchone()

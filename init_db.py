@@ -22,6 +22,8 @@ try:
              'answer2 text,'
              'answer3 text,'
              'answer4 text,'
+             'answer5 text,'
+             'answer6 text,'
              'solution char,'
              'latitude int,'
              'longitude int,'
