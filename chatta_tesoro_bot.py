@@ -199,12 +199,10 @@ def add_team(chat_id, team_name, leader_name):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
+    query = 'INSERT INTO team(chat_id, team_name, leader_name) VALUES (?, ?, ?)'
+
     try:
-        query = ('INSERT INTO team(chat_id, team_name, leader_name) '
-                 'VALUES({0}, "{1}", "{2}")'.format(chat_id,
-                                                    team_name,
-                                                    leader_name))
-        c.execute(query)
+        c.execute(query, (chat_id, team_name, leader_name))
         conn.commit()
     except sqlite3.IntegrityError:
         return 0
