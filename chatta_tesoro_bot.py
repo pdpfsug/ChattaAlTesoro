@@ -108,7 +108,7 @@ def handle(msg):
                             answer = riddle[9]
                             if not answer:
                                 answer = 'Esatto!'
-                            bot.sendMessage(chat_id, answer)
+                            bot.sendMessage(chat_id, answer, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
                                     bot.sendPhoto(chat_id, f, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
