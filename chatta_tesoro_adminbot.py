@@ -286,7 +286,9 @@ def do_csv_import(csvfile):
         if img_name.startswith('https://') or img_name.startswith('http://'):
             # Image is a link so download and save it to the img/ folder
             img_url = img_name
-            img_name = str(uuid.uuid4()) + '.png'
+            # TODO: assume that the URL ends with the image extension
+            ext = img_name[img_name.rfind('.'):]
+            img_name = str(uuid.uuid4()) + ext
             urllib.request.urlretrieve(img_url, 'img/%s' % img_name)
 
         add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6,
