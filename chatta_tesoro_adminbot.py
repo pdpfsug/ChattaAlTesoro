@@ -188,11 +188,11 @@ def handle(msg):
         with open('t.csv', 'wb') as csvfile:
             bot.download_file(msg['document']['file_id'], csvfile)
         with open('t.csv', 'r', encoding='utf-8') as csvfile:
-            do_csv_import(csvfile)
+            do_csv_import(csvfile, chat_id)
 
-        USER_STATE[chat_id] = 0
         bot.sendMessage(chat_id, "Importazione quiz terminata correttamente!")
-
+        
+        USER_STATE[chat_id] = 0
 
 # Database related functions
 def add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6, solution, lat=None, lon=None, img_name=None, msg_success='', msg_error='', sorting=None):
@@ -267,7 +267,7 @@ def do_csv_export(chat_id):
     conn.close()
     return csvfile
 
-def do_csv_import(csvfile):
+def do_csv_import(csvfile, chat_id):
     """
     """
     csvfile.seek(0)
@@ -294,6 +294,12 @@ def do_csv_import(csvfile):
         add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6,
             solution, lat, lon, img_name, msg_success, msg_error, sorting)
         
+        bot.sendMessage(chat_id, "Ecco il QR per l'indovinello %s: '%s'" % (
+            sorting, ridd_id))
+        # Send QR
+        with open('img/qr-%s.png' % ridd_id, 'rb') as f:
+            bot.sendPhoto(chat_id, f)
+
 
 ### Main ###
 if __name__ == "__main__":
