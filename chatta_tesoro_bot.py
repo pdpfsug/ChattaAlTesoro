@@ -146,10 +146,12 @@ def handle(msg):
                             longitude = data[1]
                             help_img = data[2]
 
-                            answer = riddle[9]
-                            if not answer:
-                                answer = 'Esatto!'
-                            bot.sendMessage(chat_id, answer, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                            msg_success = riddle[9] or 'Esatto!'
+                            messages = [x.strip() for x in msg_success.split('---')]
+                            for message in messages:
+                                bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                                sleep(1.5)
+
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
                                     bot.sendPhoto(chat_id, f, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
@@ -369,32 +371,6 @@ def get_next_riddle_location(chat_id):
 
         query = 'SELECT latitude, longitude, help_img FROM riddle WHERE ridd_id = ?'
         c.execute(query, (next_ridd_id,))
-
-        data = c.fetchone()
-
-        # Finally close connection
-        conn.close()
-
-        return data
-    else:
-        return 0
-
-def get_next_riddle_location(chat_id):
-    """
-    Get next riddle location from DB
-    """
-    # Open DB
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-
-    next_ridd_id = get_next_riddle_location(chat_id)
-
-    # There is still something to find
-    if next_ridd_id:
-
-        query = ('SELECT latitude, longitude, help_img, ridd_id '
-                'FROM riddle WHERE sorting = {0}'.format(next_ridd_id))
-        c.execute(query)
 
         data = c.fetchone()
 
