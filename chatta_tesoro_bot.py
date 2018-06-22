@@ -33,7 +33,7 @@ class State(object):
 class UserState(dict):
 
     def __setitem__(self, key, value):
-        if key not in self:
+        if key not in self  and isinstance(value, int):
             super().__setitem__(key, State(value))
         else:
             self[key].state = value
@@ -175,6 +175,7 @@ def handle(msg):
 
             if riddle:
                 USER_STATE[chat_id] = 2
+                USER_STATE[chat_id].riddle_id = ridd_id
 
                 # Save answers for next message
                 TEMPS[chat_id] = {}
