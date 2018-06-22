@@ -184,7 +184,7 @@ def handle(msg):
         bot.sendMessage(chat_id, "Inserisci /done per confermare o /cancel per annulare")
 
     elif content_type == 'document' and USER_STATE[chat_id] == 10:
-        reset_game()
+        reset_game(reset_team=False)
         with open('t.csv', 'wb') as csvfile:
             bot.download_file(msg['document']['file_id'], csvfile)
         with open('t.csv', 'r', encoding='utf-8') as csvfile:
@@ -226,7 +226,7 @@ def add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5,
 
     return 1
 
-def reset_game():
+def reset_game(reset_team=True):
     """
     Reset old game data
     """
@@ -235,8 +235,9 @@ def reset_game():
     c = conn.cursor()
 
     # Delete old teams
-    query = ('DELETE FROM team')
-    c.execute(query)
+    if reset_team:
+        query = ('DELETE FROM team')
+        c.execute(query)
 
     # Delete old riddles
     query = ('DELETE FROM riddle')
