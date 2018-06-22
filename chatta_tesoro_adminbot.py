@@ -204,14 +204,11 @@ def add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5,
     c = conn.cursor()
 
     query = ('INSERT INTO riddle(ridd_id, kind, question, answer1, answer2, answer3, answer4, answer5, answer6, '
-             'solution, latitude, longitude, help_img, msg_success, msg_error, sorting) '
-             'VALUES("{0}", "{1}", "{2}", "{3}", "{4}", "{5}",'
-             '"{6}", "{7}", "{8}", "{9}", "{10}", "{11}", "{12}", "{13}", "{14}", "{15}")'.format(ridd_id, kind,
-                text, answer1, answer2, answer3, answer4, answer5, answer6,
-                solution, lat, lon, img_name,
-                msg_success, msg_error, sorting))
-
-    c.execute(query)
+                'solution, latitude, longitude, help_img, msg_success, msg_error, sorting) '
+                'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    
+    c.execute(query, (ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6,
+                                    solution, lat, lon, img_name, msg_success, msg_error, sorting))
     conn.commit()
 
     # At the end close connection
