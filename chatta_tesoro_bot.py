@@ -21,6 +21,29 @@ from settings import TOKEN_GAME, PASSWORD, DB_NAME
 from random import randint
 from telepot.namedtuple import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
+class State(object):
+
+    def __init__(self, value):
+        self.state = value
+        self.riddle_id = ''
+
+    def __eq__(self, value):
+        return self.state == value
+
+class UserState(dict):
+
+    def __setitem__(self, key, value):
+        if key not in self:
+            super().__setitem__(key, State(value))
+        else:
+            self[key].state = value
+
+
+# Global variables
+USER_STATE = UserState()
+TEMPS = {}
+
+
 def handle(msg):
     """
     This function handle all incoming messages from users
@@ -29,9 +52,7 @@ def handle(msg):
     print("Messaggio: %s" % msg)
 
     # Init user state if don't exist
-    try:
-        USER_STATE[chat_id] = USER_STATE[chat_id]
-    except KeyError:
+    if chat_id not in USER_STATE:
         USER_STATE[chat_id] = 0
 
     # Check if user is banned    
@@ -320,10 +341,6 @@ if __name__ == "__main__":
     with open(PIDFILE, 'w') as f:
         f.write(PID)
         f.close()
-
-    # Variables
-    USER_STATE = {}
-    TEMPS = {}
 
     # Start working
     try:
