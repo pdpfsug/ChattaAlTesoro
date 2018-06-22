@@ -23,9 +23,15 @@ from telepot.namedtuple import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 class State(object):
 
-    def __init__(self, value):
+    def __init__(self, value, riddle_id='', solution='', kind=None, 
+                    msg_success='Esatto!', msg_error="Errore!"):
         self.state = value
-        self.riddle_id = ''
+        self.riddle_id = riddle_id
+        self.solution = solution
+        self.ban_time = 0
+        self.msg_success = msg_success
+        self.msg_error = msg_error
+        self.kind = kind
 
     def __eq__(self, value):
         return self.state == value
@@ -33,7 +39,9 @@ class State(object):
 class UserState(dict):
 
     def __setitem__(self, key, value):
-        if key not in self  and isinstance(value, int):
+        if isinstance(value, State):
+            super().__setitem__(key, value)
+        elif key not in self  and isinstance(value, int):
             super().__setitem__(key, State(value))
         else:
             self[key].state = value
@@ -53,7 +61,20 @@ def handle(msg):
 
     # Init user state if don't exist
     if chat_id not in USER_STATE:
-        USER_STATE[chat_id] = 0
+        next_riddle_id = get_next_riddle_id(chat_id)
+        if next_riddle_id:
+            riddle = get_riddle(next_riddle_id)
+        else:
+            USER_STATE[chat_id] = 0
+            riddle = None
+
+        if riddle:
+            USER_STATE[chat_id] = State(
+                value=2, riddle_id=next_riddle_id, solution=riddle[8],
+                kind=riddle[1], msg_success=riddle[9] or "Esatto!", 
+                msg_error=riddle[10])
+        else:
+            USER_STATE[chat_id] = 0
 
     # Check if user is banned    
     try:
@@ -81,7 +102,7 @@ def handle(msg):
 
         # Register Team - 2
         elif USER_STATE[chat_id] == 1:
-            USER_STATE[chat_id] = 0
+            USER_STATE[chat_id] = State(value=0)
 
             # Leader name
             lname = ""
@@ -114,7 +135,7 @@ def handle(msg):
                 
                 if user_given_solution.upper() == solution.upper():
                     # Mark as solved
-                    USER_STATE[chat_id] = 0
+                    USER_STATE[chat_id] = State(value=0)
 
                     if add_solved(chat_id, ridd_id):
                         # Get next riddle position
@@ -166,18 +187,40 @@ def handle(msg):
             image.load()
 
         try: 
-            # Decode QR
-            codes = zbarlight.scan_codes('qrcode', image)
+            state = USER_STATE[chat_id]
+            if state.kind == "photo":
+                # TODO: inviare la foto su un feed facebook
 
-            # Get riddle and send it 
-            ridd_id = codes[0].decode()
+                # Segna il riddle come risolto
+                add_solved(chat_id, state.riddle_id)
+
+                # Invia il messaggio di successo
+                bot.sendMessage(chat_id, state.msg_success)
+
+                # Invia il successivo riddle
+                next_riddle_id = get_next_riddle_id(chat_id)
+                if next_riddle_id:
+                    ridd_id = next_riddle_id
+                else:
+                    ridd_id = "pippo"
+            else:    
+                # Decode QR
+                codes = zbarlight.scan_codes('qrcode', image)
+
+                # Get riddle and send it 
+                ridd_id = codes[0].decode()
+
             riddle = get_riddle(ridd_id)
 
             if riddle:
-                USER_STATE[chat_id] = 2
-                USER_STATE[chat_id].riddle_id = ridd_id
+                USER_STATE[chat_id] = State(
+                    value=2, riddle_id=ridd_id, solution=riddle[8],
+                    kind=riddle[1], msg_success=riddle[9] or "Esatto!", 
+                    msg_error=riddle[10])
 
                 # Save answers for next message
+                # TODO: replace them by using the State object, but do a careful testing!
+                # TODO: (better do it after Pescara!)
                 TEMPS[chat_id] = {}
                 TEMPS[chat_id]['ridd_id'] = ridd_id
                 TEMPS[chat_id]['solution'] = riddle[8]
@@ -192,7 +235,8 @@ def handle(msg):
 
                 # Multimessagges support: issue #11
                 # Each Messagge has the "---" separator if it is a multimessage
-                messages = [x.strip() for x in riddle[0].split('---')]
+                question = riddle[0]
+                messages = [x.strip() for x in question.split('---')]
                 for message in messages:
                     bot.sendMessage(chat_id, message, reply_markup=markup)
                     sleep(1.5)
@@ -291,6 +335,25 @@ def get_riddle(ridd_id):
 
     return riddle
 
+def get_next_riddle_id(chat_id):
+
+    # Open DB
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    # Get number of not solved riddles
+    query = ('SELECT ridd_id FROM riddle WHERE '
+             'sorting = (SELECT MIN(sorting) as next_sorting_id '
+             'FROM riddle '
+             'WHERE ridd_id NOT IN '
+             '(SELECT riddle FROM solved_riddle WHERE team = {0}))'.format(chat_id))
+    c.execute(query)
+    next_riddle_id = c.fetchone()[0]
+    
+    conn.close()
+    return next_riddle_id
+
+
 def get_next_riddle_location(chat_id):
     """
     Get next riddle location from DB
@@ -299,20 +362,38 @@ def get_next_riddle_location(chat_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
 
-    # Get number of not solved riddles
-    query = ('SELECT MIN(sorting) as next_id '
-             'FROM riddle '
-             'WHERE ridd_id NOT IN '
-             '(SELECT riddle FROM solved_riddle WHERE team = {0})'.format(chat_id))
-    c.execute(query)
-    next_ridd_id = c.fetchone()[0]
+    next_ridd_id = get_next_riddle_id(chat_id)
 
     # There is still something to find
     if next_ridd_id:
 
-        query = ('SELECT latitude, longitude, help_img '
-                'FROM riddle '
-                'WHERE sorting = {0}'.format(next_ridd_id))
+        query = 'SELECT latitude, longitude, help_img FROM riddle WHERE ridd_id = ?'
+        c.execute(query, (next_ridd_id,))
+
+        data = c.fetchone()
+
+        # Finally close connection
+        conn.close()
+
+        return data
+    else:
+        return 0
+
+def get_next_riddle_location(chat_id):
+    """
+    Get next riddle location from DB
+    """
+    # Open DB
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+
+    next_ridd_id = get_next_riddle_location(chat_id)
+
+    # There is still something to find
+    if next_ridd_id:
+
+        query = ('SELECT latitude, longitude, help_img, ridd_id '
+                'FROM riddle WHERE sorting = {0}'.format(next_ridd_id))
         c.execute(query)
 
         data = c.fetchone()
