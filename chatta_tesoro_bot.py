@@ -168,7 +168,13 @@ def handle(msg):
                 ])
                 if riddle[1] == 'open':
                     markup = None
-                bot.sendMessage(chat_id, riddle[0], reply_markup=markup)
+
+                # Multimessagges support: issue #11
+                # Each Messagge has the "---" separator if it is a multimessage
+                messages = [x.strip() for x in riddle[0].split('---')]
+                for message in messages:
+                    bot.sendMessage(chat_id, message, reply_markup=markup)
+                    sleep(1.5)
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
         except Exception as e:
