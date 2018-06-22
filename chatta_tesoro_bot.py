@@ -21,7 +21,6 @@ from settings import TOKEN_GAME, PASSWORD, DB_NAME
 from random import randint
 from telepot.namedtuple import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
-
 def handle(msg):
     """
     This function handle all incoming messages from users
@@ -305,33 +304,34 @@ def get_next_riddle_location(chat_id):
 
 
 ### Main ###
-print("Starting Makerspace - ChattaAlTesoroBot...")
+if __name__ == "__main__":
+    print("Starting Makerspace - ChattaAlTesoroBot...")
 
-# PID file
-PID = str(os.getpid())
-PIDFILE = "/tmp/mk_cat.pid"
+    # PID file
+    PID = str(os.getpid())
+    PIDFILE = "/tmp/mk_cat.pid"
 
-# Check if PID exist
-if os.path.isfile(PIDFILE):
-    print("%s already exists, exiting!" % PIDFILE)
-    sys.exit()
+    # Check if PID exist
+    if os.path.isfile(PIDFILE):
+        print("%s already exists, exiting!" % PIDFILE)
+        sys.exit()
 
-# Create PID file
-with open(PIDFILE, 'w') as f:
-    f.write(PID)
-    f.close()
+    # Create PID file
+    with open(PIDFILE, 'w') as f:
+        f.write(PID)
+        f.close()
 
-# Variables
-USER_STATE = {}
-TEMPS = {}
+    # Variables
+    USER_STATE = {}
+    TEMPS = {}
 
-# Start working
-try:
-    bot = telepot.Bot(TOKEN_GAME)
-    bot.message_loop(handle)
+    # Start working
+    try:
+        bot = telepot.Bot(TOKEN_GAME)
+        bot.message_loop(handle)
 
-    while 1:
-        TEMPS['time'] = int(time())
-        sleep(1)
-finally:
-    os.unlink(PIDFILE)
+        while 1:
+            TEMPS['time'] = int(time())
+            sleep(1)
+    finally:
+        os.unlink(PIDFILE)
