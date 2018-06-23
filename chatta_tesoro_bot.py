@@ -92,6 +92,11 @@ def handle(msg):
             bot.sendMessage(chat_id, "Benvenuto in @ChattaAlTesoroBot!\n"
                                      "Usa il comando /team per registrare la tua squadra")
 
+        elif command_input == '/help' or command_input == '/aiuto':
+            # TODO: definire testo di help
+            bot.sendMessage(chat_id, "Benvenuto in @ChattaAlTesoroBot!\n"
+                                     "Usa il comando /team per registrare la tua squadra")
+
         # Register Team
         elif command_input == '/team':
             if game_started():
