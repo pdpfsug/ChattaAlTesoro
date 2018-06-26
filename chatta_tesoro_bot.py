@@ -90,15 +90,10 @@ def handle(msg):
 
         if command_input == '/start':
             bot.sendMessage(chat_id, "Benvenuto in @ChattaAlTesoroBot!\n"
-                                     "Usa il comando /team per registrare la tua squadra")
-
-        elif command_input == '/help' or command_input == '/aiuto':
-            # TODO: definire testo di help
-            bot.sendMessage(chat_id, "Benvenuto in @ChattaAlTesoroBot!\n"
-                                     "Usa il comando /team per registrare la tua squadra")
+                                     "Usa il comando /iscrivimi per registrare la tua squadra")
 
         # Register Team
-        elif command_input == '/team':
+        elif command_input == '/iscrivimi':
             if game_started():
                 bot.sendMessage(chat_id, "Mi dispiace ma la caccia al tesoro è già cominciata...")
             else:
@@ -155,7 +150,7 @@ def handle(msg):
                             messages = [x.strip() for x in msg_success.split('---')]
                             for message in messages:
                                 bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
-                                sleep(1.5)
+                                sleep(10)
 
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
@@ -246,7 +241,7 @@ def handle(msg):
                 messages = [x.strip() for x in question.split('---')]
                 for message in messages:
                     bot.sendMessage(chat_id, message, reply_markup=markup)
-                    sleep(1.5)
+                    sleep(60)
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
         except Exception as e:
