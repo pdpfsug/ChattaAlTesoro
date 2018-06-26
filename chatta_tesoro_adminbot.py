@@ -64,6 +64,18 @@ def handle(msg):
                 bot.sendMessage(chat_id, "Non hai i permessi per effetture questa operazione!")
         # Commands reserved to current admin
         else:
+
+            if command_input == '/squadre':
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                query = 'SELECT chat_id, team_name, leader_name FROM team'
+                c.execute(query)
+                data = c.fetchall()
+                conn.close()
+                bot.sendMessage(chat_id, 'Ecco la lista delle squadre registrate:')
+                for team in data:
+                    bot.sendMessage(chat_id, team[1])
+
             # Close configuration
             if command_input == '/stop':
                 CURRENT_ADMIN = 0
