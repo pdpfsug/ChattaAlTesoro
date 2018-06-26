@@ -89,8 +89,24 @@ def handle(msg):
         command_input = msg['text']
 
         if command_input == '/start':
-            bot.sendMessage(chat_id, "Benvenuto in @ChattaAlTesoroBot!\n"
-                                     "Usa il comando /iscrivimi per registrare la tua squadra")
+            bot.sendMessage(chat_id, "Ciao! Se stai leggendo questo messaggio, vuol dire che sei passato davanti allo scoiattolo. Prima di continuare ascolta bene...")
+            bot.sendMessage(chat_id, "https://youtu.be/wRMaGacdics")
+            bot.sendMessage(chat_id, "Esatto, ho bisogno che tu e i tuoi amici mi aiutiate.\n"
+                "Potete farlo! Basta formare un gruppo che va dai 2 ai 5 componenti.\n"
+                "Usa il comando /iscrivimi per registrare il tuo gruppo, proseguendo con la registrazione dichiari di aver letto e accettato i termini del /regolamento")
+            
+        if command_input == '/regolamento':
+            bot.sendMessage(chat_id, "Vorrei darvi anche delle raccomandazioni.\n" 
+                "Contenuto del regolamento:\n\n"
+                "1- L’obiettivo del gioco è ritrovare le chiavi rubate\n"
+                "2- Il gruppo è rappresentato dal leader, la caccia al tesoro verrà svolta solo attraverso lo smartphone del leader\n"
+                "3- Per poter giocare, assicuratevi di avere lo smartphone carico\n"
+                "4- Utilizzate la mappa per individuare le tappe\n"
+                "5- In ogni tappa troverete una prova, dovrete risolverlo per ricevere un indizio e sbloccare la tappa successiva\n"
+                "6- Le tappe sono sequenziali: non potete saltare alcuna tappa!\n"
+                "7- I team più in gamba verranno ricompensati. Come? Lo scoprirete giocando ;)\n\n"
+                "Ultimo consiglio: dovrete restare sempre compatti, l’unione fa la forza... ricordatelo sempre!\n\n"
+                "I primi 3 a trovare le chiavi, vincono la caccia al tesoro!")
 
         # Register Team
         elif command_input == '/iscrivimi':
@@ -98,11 +114,13 @@ def handle(msg):
                 bot.sendMessage(chat_id, "Mi dispiace ma la caccia al tesoro è già cominciata...")
             else:
                 USER_STATE[chat_id] = 1
-                bot.sendMessage(chat_id, "Perfetto! Inserisci il nome della tua squadra")
+                bot.sendMessage(chat_id, "Fantastico! Grazie 😉\n"
+                    "Per poter proseguire inviatemi il nome del vostro gruppo (esempio: “teamnomegruppo”).\n"
+                    "Ragazzi, siate creativi nella scelta del nome, vi renderà unici!")
 
         # Register Team - 2
         elif USER_STATE[chat_id] == 1:
-            USER_STATE[chat_id] = State(value=0)
+            USER_STATE[chat_id] = 3 # invio foto gruppo
 
             # Leader name
             lname = ""
@@ -114,7 +132,7 @@ def handle(msg):
                 pass
 
             if add_team(chat_id, command_input, lname):
-                bot.sendMessage(chat_id, "Registrazione avvenuta con successo!")
+                bot.sendMessage(chat_id, "{} è ufficiale: siete in gioco!\nPer suggellare la nostra alleanza, inviatemi una vostra foto insieme allo scoiattolo, può essere un selfie o potete chiedere a qualcuno di farvela scattare, l’importante è che facciate una bella smorfia di gruppo.".format(command_input))
             else:
                 bot.sendMessage(chat_id, "Sembra che tu sia già registrato, in caso contrario parla con qualcuno dello staff!")
 
@@ -175,6 +193,16 @@ def handle(msg):
             else:
                 USER_STATE[chat_id] = 0
                 bot.sendMessage(chat_id, "Mi dispiace ma sembra che la caccia al tesoro sia finita", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+        else:
+            bot.sendMessage(chat_id, "Mi dispiace, non conosco questo comando 😦\nUsa /help")
+
+    elif content_type == 'photo' and USER_STATE[chat_id] == 3:
+
+        # TODO: inoltrare la foto all'admin bot
+
+        bot.sendMessage(chat_id, "Molto bene! Condividetela sui vostri profili social con gli hashtag #seguiloscoiattolo #teamGoonies.\nFatela girare, la foto che riceverà  più like entro le 19:00 del 29 giugno vincerà una vacanza con me! 😛")
+        bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
+        USER_STATE[chat_id] = State(value=0)
 
     elif content_type == 'photo' and is_registred(chat_id) and game_started():
         msg = msg['photo'][-1]['file_id']
