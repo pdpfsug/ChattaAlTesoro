@@ -24,7 +24,7 @@ from settings import TOKEN_ADMIN, DB_NAME, PASSWORD, TOKEN_GAME
 # Variables
 USER_STATE = {}
 TMP_RIDDLE = {}
-CURRENT_ADMIN = 0
+CURRENT_ADMIN = []
 
 
 def handle(msg):
@@ -32,6 +32,17 @@ def handle(msg):
     This function handle all incoming messages from users
     """
     global CURRENT_ADMIN
+
+    CURRENT_ADMIN = []
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    query = 'SELECT chat_id FROM admin'
+    c.execute(query)
+    data = c.fetchall()
+    conn.close()
+    for admin in data:
+        CURRENT_ADMIN.append(admin[0])
+
     content_type, chat_type, chat_id = telepot.glance(msg)
 
     # Init user state if don't exist
@@ -45,7 +56,7 @@ def handle(msg):
         command_input = msg['text']
 
         # Public commands
-        if chat_id != CURRENT_ADMIN:
+        if chat_id not in CURRENT_ADMIN:
             # Start with authentication
             if command_input == '/start':
                 USER_STATE[chat_id] = 1
@@ -53,9 +64,13 @@ def handle(msg):
                                          "Inserisci la password.")
             elif command_input == PASSWORD and USER_STATE[chat_id] == 1:
                 # Set admin
-                CURRENT_ADMIN = chat_id
                 USER_STATE[chat_id] = 0
-
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                query = 'INSERT INTO admin(chat_id) VALUES({})'.format(chat_id)
+                c.execute(query)
+                conn.commit()
+                conn.close()
                 bot.sendMessage(chat_id, "Ora sei l'admin del gioco.\n"
                                          "Per terminare la configurazione digita /stop.")
             elif command_input != PASSWORD and USER_STATE[chat_id] == 1:
@@ -78,7 +93,6 @@ def handle(msg):
 
             # Close configuration
             if command_input == '/stop':
-                CURRENT_ADMIN = 0
                 bot.sendMessage(chat_id, "Configurazione completata!")
 
             # Start Treasure Hunt

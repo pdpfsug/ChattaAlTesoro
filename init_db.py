@@ -39,6 +39,8 @@ try:
              'foreign key(team) references team(chat_id),'
              'foreign key(riddle) references riddle(ridd_id),'
              'primary key(team, riddle));')
+
+    query = ('CREATE TABLE admin(chat_id integer primary_key);')
     c.execute(query)
     conn.commit()
 except Exception as e:
