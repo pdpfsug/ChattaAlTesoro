@@ -19,7 +19,7 @@ import sqlite3
 from time import sleep
 import qrcode
 import telepot
-from settings import TOKEN_ADMIN, DB_NAME, PASSWORD
+from settings import TOKEN_ADMIN, DB_NAME, PASSWORD, TOKEN_GAME
 
 # Variables
 USER_STATE = {}
@@ -86,7 +86,17 @@ def handle(msg):
                 with open('tesoro.lock', 'w') as f:
                     f.write(PID)
                     f.close()
+                game_bot = telepot.Bot(TOKEN_GAME)
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                query = 'SELECT chat_id FROM team'
+                c.execute(query)
+                data = c.fetchall()
+                conn.close()
                 bot.sendMessage(chat_id, "La caccia al tesoro è iniziata!")
+                for team in data:
+                    game_bot.sendMessage(team[0], 'La caccia al tesoro è iniziata!')
+                bot.sendMessage(chat_id, "(notifica inviata ai giocatori)")
 
             # Stop Treasure Hunt
             elif command_input == '/stop_hunt':
