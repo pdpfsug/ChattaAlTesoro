@@ -8,3 +8,5 @@ tesoro.lock
 QR.png
 settings.py
 img/
+treasure_hunt.db
+*.csv
