@@ -107,9 +107,25 @@ def handle(msg):
                 c.execute(query)
                 data = c.fetchall()
                 conn.close()
-                bot.sendMessage(chat_id, "La caccia al tesoro è iniziata!")
+                coords_first_position = [42.472441, 14.20929]
+                bot.sendMessage(chat_id, "Eccovi! Sono felice che siate tornati. Siete pronti?\n"
+                    "Io no... ma al bando la paura!\n"
+                    "Iniziamo insieme questa avventura!")
+                bot.sendMessage(chat_id, "Abbiamo a disposizione solo quattro ore, potete controllare il tempo rimanente scrivendo /tempo.\n"
+                    "Il primo luogo da raggiungere non è molto lontano da voi.\n")
+                bot.sendMessage(chat_id, "Vi dico solo “Se lu mar è bell lu gabbian...frect!”\n"
+                    "Che l’avventura abbia inizio! In bocca allo scoiatt… ehm, al lupo! Conto su di voi.")
+                bot.sendLocation(chat_id, coords_first_position[0], coords_first_position[1])
                 for team in data:
-                    game_bot.sendMessage(team[0], 'La caccia al tesoro è iniziata!')
+                    game_bot.sendMessage(team[0], "Eccovi! Sono felice che siate tornati. Siete pronti?\n"
+                        "Io no... ma al bando la paura!\n"
+                        "Iniziamo insieme questa avventura!")
+                    game_bot.sendMessage(team[0], "Abbiamo a disposizione solo quattro ore, potete controllare il tempo rimanente scrivendo /tempo.\n"
+                        "Il primo luogo da raggiungere non è molto lontano da voi.\n")
+                    game_bot.sendMessage(team[0], "Vi dico solo “Se lu mar è bell lu gabbian...frect!”\n"
+                        "Che l’avventura abbia inizio! In bocca allo scoiatt… ehm, al lupo! Conto su di voi.")
+                    game_bot.sendLocation(team[0], coords_first_position[0], coords_first_position[1])
+                    
                 bot.sendMessage(chat_id, "(notifica inviata ai giocatori)")
 
             # Stop Treasure Hunt
