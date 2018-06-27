@@ -296,6 +296,12 @@ def handle(msg):
             # Remove used file
             os.unlink(filename)
 
+    elif content_type == 'photo' and not is_registred(chat_id):
+        is_game_started = game_started()
+        if is_game_started:
+            bot.sendMessage(chat_id, "Mi dispiace, ma il gioco è già iniziato.\nDovrai attendere la prossima caccia al tesoro!")
+        else:
+            bot.sendMessage(chat_id, "Non sei registrato! Usa il comando /iscrivimi")
 
 # Utility functions
 def game_started():
