@@ -89,7 +89,7 @@ def handle(msg):
                 conn.close()
                 bot.sendMessage(chat_id, 'Ecco la lista delle squadre registrate:')
                 for team in data:
-                    bot.sendMessage(chat_id, team[1])
+                    bot.sendMessage(chat_id, '{} (id: {})'.format(team[1], team[0]))
 
             # Close configuration
             if command_input == '/stop':

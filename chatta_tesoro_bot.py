@@ -118,6 +118,10 @@ def handle(msg):
                 "/aiuto - Invia suggerimento\n")
             return
 
+        if command_input == '/id':
+            bot.sendMessage(chat_id, '{}'.format(chat_id))
+            return
+
         # Register Team
         elif command_input == '/iscrivimi':
             if game_started():
