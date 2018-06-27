@@ -14,6 +14,7 @@ import sys
 import uuid
 import sqlite3
 import io
+import datetime
 from time import time, sleep
 import telepot
 import zbarlight
@@ -121,6 +122,16 @@ def handle(msg):
 
         if command_input == '/id':
             bot.sendMessage(chat_id, '{}'.format(chat_id))
+            return
+
+        if command_input == '/tempo':
+            if game_started():
+                now = datetime.datetime.now()
+                end_game = now.replace(hour=19, second=0, microsecond=0)
+                delta = str(end_game - now).split('.')[0]
+                bot.sendMessage(chat_id, "Il gioco terminerà alle 19:00\nRimagono: {}".format(delta))
+            else:
+                bot.sendMessage(chat_id, 'Il gioco non è ancora iniziato!')
             return
 
         # Register Team
