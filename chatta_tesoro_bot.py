@@ -51,6 +51,7 @@ class UserState(dict):
 # Global variables
 USER_STATE = UserState()
 TEMPS = {}
+SLEEP_TIME = 2
 
 
 def handle(msg):
@@ -183,7 +184,8 @@ def handle(msg):
                             messages = [x.strip() for x in msg_success.split('---')]
                             for message in messages:
                                 bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
-                                sleep(4)
+                                bot.sendChatAction(chat_id, 'typing')
+                                sleep(SLEEP_TIME)
 
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
@@ -203,6 +205,8 @@ def handle(msg):
                     error_message = riddle[10]
                     if not error_message:
                         error_message = 'Sbagliato!'
+                    bot.sendChatAction(chat_id, 'typing')
+                    sleep(SLEEP_TIME)
                     bot.sendMessage(chat_id, error_message)
                     bot.sendMessage(chat_id, "Riprova tra 60 secondi")
             else:
@@ -257,6 +261,8 @@ def handle(msg):
                 add_solved(chat_id, state.riddle_id)
 
                 # Invia il messaggio di successo
+                bot.sendChatAction(chat_id, 'typing')
+                sleep(SLEEP_TIME)    
                 bot.sendMessage(chat_id, state.msg_success)
 
                 # Invia il successivo riddle
@@ -295,6 +301,9 @@ def handle(msg):
                 if riddle[1] == 'open':
                     markup = None
 
+                bot.sendChatAction(chat_id, 'typing')
+                sleep(SLEEP_TIME)
+
                 # Multimessagges support: issue #11
                 # Each Messagge has the "---" separator if it is a multimessage
                 question = riddle[0]
@@ -302,7 +311,8 @@ def handle(msg):
                 last_message_with_markup = messages.pop()
                 for message in messages:
                     bot.sendMessage(chat_id, message)
-                    sleep(4)
+                    bot.sendChatAction(chat_id, 'typing')
+                    sleep(SLEEP_TIME)
                 bot.sendMessage(chat_id, last_message_with_markup, reply_markup=markup)
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')

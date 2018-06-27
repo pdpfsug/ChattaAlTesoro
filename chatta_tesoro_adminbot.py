@@ -379,7 +379,7 @@ if __name__ == "__main__":
         bot.message_loop(handle)
 
         while 1:
-            sleep(10)
+            sleep(1)
     finally:
         os.unlink(PIDFILE)
 
