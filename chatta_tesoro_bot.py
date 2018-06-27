@@ -172,7 +172,7 @@ def handle(msg):
                             messages = [x.strip() for x in msg_success.split('---')]
                             for message in messages:
                                 bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
-                                sleep(10)
+                                sleep(4)
 
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
@@ -286,7 +286,7 @@ def handle(msg):
                 messages = [x.strip() for x in question.split('---')]
                 for message in messages:
                     bot.sendMessage(chat_id, message, reply_markup=markup)
-                    sleep(60)
+                    sleep(4)
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
         except Exception as e:
