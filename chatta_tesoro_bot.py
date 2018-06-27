@@ -95,6 +95,7 @@ def handle(msg):
             bot.sendMessage(chat_id, "Esatto, ho bisogno che tu e i tuoi amici mi aiutiate.\n"
                 "Potete farlo! Basta formare un gruppo che va dai 2 ai 5 componenti.\n"
                 "Usa il comando /iscrivimi per registrare il tuo gruppo, proseguendo con la registrazione dichiari di aver letto e accettato i termini del /regolamento")
+            return
             
         if command_input == '/regolamento':
             bot.sendMessage(chat_id, "Vorrei darvi anche delle raccomandazioni.\n" 
@@ -108,6 +109,7 @@ def handle(msg):
                 "7- I team più in gamba verranno ricompensati. Come? Lo scoprirete giocando ;)\n\n"
                 "Ultimo consiglio: dovrete restare sempre compatti, l’unione fa la forza... ricordatelo sempre!\n\n"
                 "I primi 3 a trovare le chiavi, vincono la caccia al tesoro!")
+            return
 
         # Register Team
         elif command_input == '/iscrivimi':
@@ -118,6 +120,7 @@ def handle(msg):
                 bot.sendMessage(chat_id, "Fantastico! Grazie 😉\n"
                     "Per poter proseguire inviatemi il nome del vostro gruppo (esempio: “teamnomegruppo”).\n"
                     "Ragazzi, siate creativi nella scelta del nome, vi renderà unici!")
+            return
 
         # Register Team - 2
         elif USER_STATE[chat_id] == 1:
