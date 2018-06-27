@@ -13,6 +13,7 @@ import os
 import sys
 import uuid
 import sqlite3
+import io
 from time import time, sleep
 import telepot
 import zbarlight
@@ -201,11 +202,17 @@ def handle(msg):
         team_name = get_team(chat_id)
         admin_bot = telepot.Bot(TOKEN_ADMIN)
         print(msg)
+        photo = bot.getFile(msg['photo'][-1]['file_id'])
+        photo_file = io.BytesIO()
+        bot.download_file(photo['file_id'], photo_file)
+        photo_file.seek(0)
         for admin in get_admins():
             msg_to = admin[0]
-            photo = msg['photo'][-1]['file_id']
-            # TODO: non funziona (Bad Request: wrong file identifier/HTTP URL specified)
-            admin_bot.sendPhoto(msg_to, photo, caption=team_name[0])
+            # Inviare tramite file_id non funziona (Bad Request: wrong file identifier/HTTP URL specified)
+            # https://core.telegram.org/bots/api#sending-files
+            # file_id is unique for each individual bot and can't be transferred from one bot to another
+            admin_bot.sendPhoto(msg_to, photo_file, caption="Nuovo team: {}".format(team_name[0]))
+        del(photo_file)
 
         bot.sendMessage(chat_id, "Molto bene! Condividetela sui vostri profili social con gli hashtag #seguiloscoiattolo #teamGoonies.\nFatela girare, la foto che riceverà  più like entro le 19:00 del 29 giugno vincerà una vacanza con me! 😛")
         bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
