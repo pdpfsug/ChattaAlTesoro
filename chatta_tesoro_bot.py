@@ -228,6 +228,10 @@ def handle(msg):
         bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
         USER_STATE[chat_id] = State(value=0)
 
+    elif content_type == 'photo' and is_registred(chat_id) and not game_started():
+        bot.sendMessage(chat_id, "La partita non è ancora iniziata!\nDevi attendere l'inizio per iniziare a giocare, ti arriverà una notifica quando sarà il momento.")
+        return
+
     elif content_type == 'photo' and is_registred(chat_id) and game_started():
         msg = msg['photo'][-1]['file_id']
 
@@ -283,7 +287,7 @@ def handle(msg):
                 # Prepare answer keyboard
                 markup = ReplyKeyboardMarkup(keyboard=[
                     [riddle[x]] for x in range(2,8) if riddle[x]
-                ])
+                ], one_time_keyboard=True)
                 if riddle[1] == 'open':
                     markup = None
 
@@ -291,9 +295,11 @@ def handle(msg):
                 # Each Messagge has the "---" separator if it is a multimessage
                 question = riddle[0]
                 messages = [x.strip() for x in question.split('---')]
+                last_message_with_markup = messages.pop()
                 for message in messages:
-                    bot.sendMessage(chat_id, message, reply_markup=markup)
+                    bot.sendMessage(chat_id, message)
                     sleep(4)
+                bot.sendMessage(chat_id, last_message_with_markup, reply_markup=markup)
             else:
                 bot.sendMessage(chat_id, 'QR non valido! Riprova')
         except Exception as e:
