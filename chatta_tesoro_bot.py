@@ -279,7 +279,11 @@ def handle(msg):
                 codes = zbarlight.scan_codes('qrcode', image)
 
                 # Get riddle and send it 
-                ridd_id = codes[0].decode()
+                try:
+                    ridd_id = codes[0].decode()
+                except TypeError:
+                    bot.sendMessage(chat_id, "In questa foto non riesco a riconoscere nessun QR code, riprova mettendo a fuoco e centrando meglio il QR.")
+                    return
 
             riddle = get_riddle(ridd_id)
 
