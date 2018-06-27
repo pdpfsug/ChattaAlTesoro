@@ -111,6 +111,13 @@ def handle(msg):
                 "I primi 3 a trovare le chiavi, vincono la caccia al tesoro!")
             return
 
+        if command_input == '/help' or command_input == '/aiuto':
+            bot.sendMessage(chat_id, "/iscrivimi - Iscrivi la tua squadra\n"
+                "/tempo - Quanto manca alla fine della caccia al tesoro\n"
+                "/regolamento - Regolamento di gioco\n"
+                "/aiuto - Invia suggerimento\n")
+            return
+
         # Register Team
         elif command_input == '/iscrivimi':
             if game_started():
