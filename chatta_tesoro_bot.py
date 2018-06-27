@@ -17,7 +17,7 @@ from time import time, sleep
 import telepot
 import zbarlight
 from PIL import Image
-from settings import TOKEN_GAME, PASSWORD, DB_NAME
+from settings import TOKEN_GAME, PASSWORD, DB_NAME, TOKEN_ADMIN
 from random import randint
 from telepot.namedtuple import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
@@ -198,7 +198,14 @@ def handle(msg):
 
     elif content_type == 'photo' and USER_STATE[chat_id] == 3:
 
-        # TODO: inoltrare la foto all'admin bot
+        team_name = get_team(chat_id)
+        admin_bot = telepot.Bot(TOKEN_ADMIN)
+        print(msg)
+        for admin in get_admins():
+            msg_to = admin[0]
+            photo = msg['photo'][-1]['file_id']
+            # TODO: non funziona (Bad Request: wrong file identifier/HTTP URL specified)
+            admin_bot.sendPhoto(msg_to, photo, caption=team_name[0])
 
         bot.sendMessage(chat_id, "Molto bene! Condividetela sui vostri profili social con gli hashtag #seguiloscoiattolo #teamGoonies.\nFatela girare, la foto che riceverà  più like entro le 19:00 del 29 giugno vincerà una vacanza con me! 😛")
         bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
@@ -408,6 +415,22 @@ def get_next_riddle_location(chat_id):
         return data
     else:
         return 0
+
+def get_admins():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    query = 'SELECT chat_id FROM admin'
+    c.execute(query)
+    data = c.fetchall()
+    return data
+
+def get_team(chat_id):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    query = 'SELECT team_name FROM team WHERE chat_id={}'.format(chat_id)
+    c.execute(query)
+    data = c.fetchone()
+    return data
 
 
 ### Main ###
