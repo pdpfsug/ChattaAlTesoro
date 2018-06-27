@@ -183,6 +183,7 @@ def handle(msg):
                             msg_success = riddle[9] or 'Esatto!'
                             messages = [x.strip() for x in msg_success.split('---')]
                             for message in messages:
+                                message = message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
                                 bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                                 bot.sendChatAction(chat_id, 'typing')
                                 sleep(SLEEP_TIME)
@@ -205,6 +206,8 @@ def handle(msg):
                     error_message = riddle[10]
                     if not error_message:
                         error_message = 'Sbagliato!'
+                    else:
+                        error_message = error_message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
                     bot.sendChatAction(chat_id, 'typing')
                     sleep(SLEEP_TIME)
                     bot.sendMessage(chat_id, error_message)
@@ -263,7 +266,7 @@ def handle(msg):
                 # Invia il messaggio di successo
                 bot.sendChatAction(chat_id, 'typing')
                 sleep(SLEEP_TIME)    
-                bot.sendMessage(chat_id, state.msg_success)
+                bot.sendMessage(chat_id, state.msg_success.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0]))
 
                 # Invia il successivo riddle
                 next_riddle_id = get_next_riddle_id(chat_id)
