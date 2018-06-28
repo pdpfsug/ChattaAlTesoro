@@ -81,15 +81,28 @@ def handle(msg):
         else:
 
             if command_input == '/squadre':
-                conn = sqlite3.connect(DB_NAME)
-                c = conn.cursor()
-                query = 'SELECT chat_id, team_name, leader_name FROM team'
-                c.execute(query)
-                data = c.fetchall()
-                conn.close()
+                data = get_teams()
                 bot.sendMessage(chat_id, 'Ecco la lista delle squadre registrate:')
                 for team in data:
                     bot.sendMessage(chat_id, '{} (id: {})'.format(team[1], team[0]))
+
+            if command_input == '/vincitori':
+                teams = get_teams()
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                c.execute('SELECT ridd_id FROM riddle')
+                data = c.fetchall()
+                riddle_num = len(data)
+                for team in teams:
+                    c.execute("SELECT COUNT(DISTINCT riddle) FROM solved_riddle WHERE team='{}'".format(team[0]))
+                    data = c.fetchone()
+                    if data[0] == riddle_num:
+                        fine = "[VITTORIA]"
+                    else:
+                        fine = ""
+                    bot.sendMessage(chat_id, "Team: {} Indovinelli: {}/{} {}".format(team[1], data[0], riddle_num, fine))
+
+                conn.close()
 
             # Close configuration
             if command_input == '/stop':
@@ -245,6 +258,15 @@ def handle(msg):
         bot.sendMessage(chat_id, "Importazione quiz terminata correttamente!")
         
         USER_STATE[chat_id] = 0
+
+def get_teams():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    query = 'SELECT chat_id, team_name, leader_name FROM team'
+    c.execute(query)
+    data = c.fetchall()
+    conn.close()
+    return data
 
 # Database related functions
 def add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6, solution, lat=None, lon=None, img_name=None, msg_success='', msg_error='', sorting=None):
