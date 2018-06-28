@@ -87,6 +87,7 @@ def handle(msg):
                     bot.sendMessage(chat_id, '{} (id: {})'.format(team[1], team[0]))
 
             if command_input == '/vincitori':
+                results = []
                 teams = get_teams()
                 conn = sqlite3.connect(DB_NAME)
                 c = conn.cursor()
@@ -94,15 +95,25 @@ def handle(msg):
                 data = c.fetchall()
                 riddle_num = len(data)
                 for team in teams:
+                    team_results = []
                     c.execute("SELECT COUNT(DISTINCT riddle) FROM solved_riddle WHERE team='{}'".format(team[0]))
                     data = c.fetchone()
                     if data[0] == riddle_num:
-                        fine = "[VITTORIA]"
+                        fine = "[VITTORIA "
+                        c.execute("SELECT MAX(timestamp) FROM solved_riddle WHERE team='{}'".format(team[0]))
+                        finish_time = c.fetchone()[0]
+                        fine += 'alle {}]'.format(finish_time)
+                        team_results.append(finish_time)
                     else:
                         fine = ""
-                    bot.sendMessage(chat_id, "Team: {} Indovinelli: {}/{} {}".format(team[1], data[0], riddle_num, fine))
-
+                        team_results.append('')
+                    team_results.append("Team: {} Indovinelli: {}/{} {}".format(team[1], data[0], riddle_num, fine))
+                    results.append(team_results)
                 conn.close()
+
+                results = sorted(results)
+                for result in results:
+                    bot.sendMessage(chat_id, result[1])
 
             # Close configuration
             if command_input == '/stop':

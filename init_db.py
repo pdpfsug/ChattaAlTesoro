@@ -36,6 +36,7 @@ try:
     query = ('CREATE TABLE solved_riddle('
              'team integer,'
              'riddle integer,'
+             'timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,'
              'foreign key(team) references team(chat_id),'
              'foreign key(riddle) references riddle(ridd_id),'
              'primary key(team, riddle));')
