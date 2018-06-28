@@ -72,6 +72,7 @@ def handle(msg):
             riddle = None
 
         if riddle:
+            #USER_STATE[chat_id] = 2
             USER_STATE[chat_id] = State(
                 value=2, riddle_id=next_riddle_id, solution=riddle[8],
                 kind=riddle[1], msg_success=riddle[9] or "Esatto!", 
@@ -185,13 +186,9 @@ def handle(msg):
                     if add_solved(chat_id, ridd_id):
                         # Get next riddle position
 
+                        # invio messaggio di successo
                         msg_success = riddle[9] or 'Esatto!'
-                        messages = [x.strip() for x in msg_success.split('---')]
-                        for message in messages:
-                            message = message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
-                            bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
-                            bot.sendChatAction(chat_id, 'typing')
-                            sleep(SLEEP_TIME)
+                        send_splitted_message(bot, chat_id, msg_success)
 
                         data = get_next_riddle_location(chat_id)
                         if data:
@@ -217,11 +214,7 @@ def handle(msg):
                     error_message = riddle[10]
                     if not error_message:
                         error_message = 'Sbagliato!'
-                    else:
-                        error_message = error_message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
-                    bot.sendChatAction(chat_id, 'typing')
-                    sleep(SLEEP_TIME)
-                    bot.sendMessage(chat_id, error_message)
+                    send_splitted_message(bot, chat_id, error_message)
                     bot.sendMessage(chat_id, "Riprova tra 60 secondi")
             else:
                 USER_STATE[chat_id] = 0
@@ -247,7 +240,7 @@ def handle(msg):
             admin_bot.sendPhoto(msg_to, photo_file, caption="Nuovo team: {}".format(team_name[0]))
         del(photo_file)
 
-        bot.sendMessage(chat_id, "Molto bene! Condividetela sui vostri profili social con gli hashtag #seguiloscoiattolo #teamGoonies.\nFatela girare, la foto che riceverà  più like entro le 19:00 del 29 giugno vincerà una vacanza con me! 😛")
+        bot.sendMessage(chat_id, "Molto bene! Condividetela sui vostri profili social con gli hashtag #seguiloscoiattolo #team{}.\nFatela girare, la foto che riceverà  più like entro le 19:00 del 29 giugno vincerà una vacanza con me! 😛".format(get_team(chat_id)[0]))
         bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
         USER_STATE[chat_id] = State(value=0)
 
@@ -279,9 +272,7 @@ def handle(msg):
                 add_solved(chat_id, state.riddle_id)
 
                 # Invia il messaggio di successo
-                bot.sendChatAction(chat_id, 'typing')
-                sleep(SLEEP_TIME)    
-                bot.sendMessage(chat_id, state.msg_success.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0]))
+                send_splitted_message(bot, chat_id, state.msg_success)
 
                 # Invia il successivo riddle
                 next_riddle_id = get_next_riddle_id(chat_id)
@@ -339,16 +330,8 @@ def handle(msg):
                 bot.sendChatAction(chat_id, 'typing')
                 sleep(SLEEP_TIME)
 
-                # Multimessagges support: issue #11
-                # Each Messagge has the "---" separator if it is a multimessage
-                question = riddle[0]
-                messages = [x.strip() for x in question.split('---')]
-                last_message_with_markup = messages.pop()
-                for message in messages:
-                    bot.sendMessage(chat_id, message)
-                    bot.sendChatAction(chat_id, 'typing')
-                    sleep(SLEEP_TIME)
-                bot.sendMessage(chat_id, last_message_with_markup, reply_markup=markup)
+                # invio nuova domanda
+                send_splitted_message(bot, chat_id, riddle[0], markup=markup)
 
         except Exception as e:
             raise
@@ -363,6 +346,18 @@ def handle(msg):
             bot.sendMessage(chat_id, "Mi dispiace, ma il gioco è già iniziato.\nDovrai attendere la prossima caccia al tesoro!")
         else:
             bot.sendMessage(chat_id, "Non sei registrato! Usa il comando /iscrivimi")
+
+
+def send_splitted_message(bot, chat_id, message, markup=None):
+    messages = [x.strip() for x in message.split('---')]
+    last_message_with_markup = messages.pop()
+    last_message_with_markup = last_message_with_markup.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
+    for message in messages:
+        message = message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
+        bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+        bot.sendChatAction(chat_id, 'typing')
+        sleep(SLEEP_TIME)
+    bot.sendMessage(chat_id, last_message_with_markup, reply_markup=markup)
 
 # Utility functions
 def game_started():
