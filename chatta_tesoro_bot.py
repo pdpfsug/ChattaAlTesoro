@@ -184,20 +184,20 @@ def handle(msg):
 
                     if add_solved(chat_id, ridd_id):
                         # Get next riddle position
-                        data = get_next_riddle_location(chat_id)
 
+                        msg_success = riddle[9] or 'Esatto!'
+                        messages = [x.strip() for x in msg_success.split('---')]
+                        for message in messages:
+                            message = message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
+                            bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                            bot.sendChatAction(chat_id, 'typing')
+                            sleep(SLEEP_TIME)
+
+                        data = get_next_riddle_location(chat_id)
                         if data:
                             latitude = data[0]
                             longitude = data[1]
                             help_img = data[2]
-
-                            msg_success = riddle[9] or 'Esatto!'
-                            messages = [x.strip() for x in msg_success.split('---')]
-                            for message in messages:
-                                message = message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
-                                bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
-                                bot.sendChatAction(chat_id, 'typing')
-                                sleep(SLEEP_TIME)
 
                             if help_img != '':
                                 with open('img/' + help_img, 'rb') as f:
@@ -229,6 +229,7 @@ def handle(msg):
         else:
             bot.sendMessage(chat_id, "Mi dispiace, non conosco questo comando 😦\nUsa /help")
 
+    # foto della squadra per la registrazione
     elif content_type == 'photo' and USER_STATE[chat_id] == 3:
 
         team_name = get_team(chat_id)
@@ -250,10 +251,12 @@ def handle(msg):
         bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
         USER_STATE[chat_id] = State(value=0)
 
+    # foto ma il gioco non è iniziato ancora
     elif content_type == 'photo' and is_registred(chat_id) and not game_started():
         bot.sendMessage(chat_id, "La partita non è ancora iniziata!\nDevi attendere l'inizio per iniziare a giocare, ti arriverà una notifica quando sarà il momento.")
         return
 
+    # invio di una foto durante il gioco
     elif content_type == 'photo' and is_registred(chat_id) and game_started():
         msg = msg['photo'][-1]['file_id']
 
@@ -268,6 +271,7 @@ def handle(msg):
 
         try: 
             state = USER_STATE[chat_id]
+            # invio di una foto richiesta dal gioco
             if state.kind == "photo":
                 # TODO: inviare la foto su un feed facebook
 
@@ -283,8 +287,11 @@ def handle(msg):
                 next_riddle_id = get_next_riddle_id(chat_id)
                 if next_riddle_id:
                     ridd_id = next_riddle_id
+                    riddle = get_riddle(ridd_id)
                 else:
-                    ridd_id = "pippo"
+                    bot.sendMessage(chat_id, "Sembra che tu abbia risolto tutti gli indovinelli! Torna al punto d'incontro!", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                    return
+            # invio di un QR CODE
             else:    
                 # Decode QR
                 codes = zbarlight.scan_codes('qrcode', image)
@@ -296,7 +303,17 @@ def handle(msg):
                     bot.sendMessage(chat_id, "In questa foto non riesco a riconoscere nessun QR code, riprova mettendo a fuoco e centrando meglio il QR.")
                     return
 
-            riddle = get_riddle(ridd_id)
+                riddle = get_riddle(ridd_id)
+
+                if not riddle:
+                    bot.sendMessage(chat_id, 'QR non valido! Riprova')
+                    return
+
+                next_riddle = get_next_riddle_id(chat_id)
+
+                if ridd_id != next_riddle:
+                    bot.sendMessage(chat_id, "Hai inviato il QR code di una tappa sbagliata, segui l'ordine corretto delle domande!")
+                    return
 
             if riddle:
                 USER_STATE[chat_id] = State(
@@ -332,8 +349,7 @@ def handle(msg):
                     bot.sendChatAction(chat_id, 'typing')
                     sleep(SLEEP_TIME)
                 bot.sendMessage(chat_id, last_message_with_markup, reply_markup=markup)
-            else:
-                bot.sendMessage(chat_id, 'QR non valido! Riprova')
+
         except Exception as e:
             raise
             bot.sendMessage(chat_id, 'QR non riconosciuto! Riprova')
@@ -446,7 +462,12 @@ def get_next_riddle_id(chat_id):
              'WHERE ridd_id NOT IN '
              '(SELECT riddle FROM solved_riddle WHERE team = {0}))'.format(chat_id))
     c.execute(query)
-    next_riddle_id = c.fetchone()[0]
+    next_riddle_id = c.fetchone()
+    # TODO: gestire risposta None
+    if next_riddle_id:
+        return next_riddle_id[0]
+    else:
+        return None
     
     conn.close()
     return next_riddle_id
