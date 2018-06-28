@@ -269,7 +269,21 @@ def handle(msg):
             state = USER_STATE[chat_id]
             # invio di una foto richiesta dal gioco
             if state.kind == "photo":
-                # TODO: inviare la foto su un feed facebook
+                # la foto del gioco viene inviata al bot admin
+
+                team_name = get_team(chat_id)
+                admin_bot = telepot.Bot(TOKEN_ADMIN)
+                photo = bot.getFile(photo_id_msg)
+                photo_file = io.BytesIO()
+                bot.download_file(photo['file_id'], photo_file)
+                photo_file.seek(0)
+                for admin in get_admins():
+                    msg_to = admin[0]
+                    # Inviare tramite file_id non funziona (Bad Request: wrong file identifier/HTTP URL specified)
+                    # https://core.telegram.org/bots/api#sending-files
+                    # file_id is unique for each individual bot and can't be transferred from one bot to another
+                admin_bot.sendPhoto(msg_to, photo_file, caption="Risposta-foto del team {}".format(team_name[0]))
+                del(photo_file)
 
                 # Segna il riddle come risolto
                 add_solved(chat_id, state.riddle_id)
