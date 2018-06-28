@@ -52,7 +52,7 @@ class UserState(dict):
 # Global variables
 USER_STATE = UserState()
 TEMPS = {}
-SLEEP_TIME = 2
+SLEEP_TIME = 6
 
 
 def handle(msg):
