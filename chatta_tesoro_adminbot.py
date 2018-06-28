@@ -344,6 +344,7 @@ def do_csv_import(csvfile, chat_id):
     """
     csvfile.seek(0)
     reader = csv.reader(csvfile, delimiter=',') #, quoting=csv.QUOTE_NONNUMERIC)
+    prev_kind = ''
     for i, row in enumerate(reader):
         if not i: 
             # skip the header row
@@ -365,12 +366,13 @@ def do_csv_import(csvfile, chat_id):
 
         add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6,
             solution, lat, lon, img_name, msg_success, msg_error, sorting)
-        
-        bot.sendMessage(chat_id, "Ecco il QR per l'indovinello %s: '%s'" % (
-            sorting, ridd_id))
-        # Send QR
-        with open('img/qr-%s.png' % ridd_id, 'rb') as f:
-            bot.sendPhoto(chat_id, f)
+        if prev_kind != 'photo':
+            bot.sendMessage(chat_id, "Ecco il QR per l'indovinello %s: '%s'" % (
+                sorting, ridd_id))
+            # Send QR
+            with open('img/qr-%s.png' % ridd_id, 'rb') as f:
+                bot.sendPhoto(chat_id, f)
+        prev_kind = kind
 
 
 ### Main ###
