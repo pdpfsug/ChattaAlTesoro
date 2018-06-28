@@ -227,7 +227,6 @@ def handle(msg):
 
         team_name = get_team(chat_id)
         admin_bot = telepot.Bot(TOKEN_ADMIN)
-        print(msg)
         photo = bot.getFile(msg['photo'][-1]['file_id'])
         photo_file = io.BytesIO()
         bot.download_file(photo['file_id'], photo_file)
@@ -251,11 +250,15 @@ def handle(msg):
 
     # invio di una foto durante il gioco
     elif content_type == 'photo' and is_registred(chat_id) and game_started():
-        msg = msg['photo'][-1]['file_id']
+        photo_id_msg = msg['photo'][-1]['file_id']
+
+        if 'forward_from' in msg:
+            bot.sendMessage(chat_id, "Hey! Non puoi inoltrarmi delle foto, devi scattarle tu 😉")
+            return
 
         # Download QR
         filename = str(uuid.uuid4())
-        bot.download_file(msg, filename)
+        bot.download_file(photo_id_msg, filename)
 
         # Open QR
         with open(filename, 'rb') as f:
@@ -284,6 +287,7 @@ def handle(msg):
                     return
             # invio di un QR CODE
             else:    
+
                 # Decode QR
                 codes = zbarlight.scan_codes('qrcode', image)
 
