@@ -205,7 +205,7 @@ def handle(msg):
                                 bot.sendLocation(chat_id, latitude, longitude, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                         else:
                             # Solved everything
-                            bot.sendMessage(chat_id, "Sembra che tu abbia risolto tutti gli indovinelli! Torna al punto d'incontro!", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                            team_end_game(chat_id)
                     else:
                         # Already solved riddle
                         bot.sendMessage(chat_id, "Sembra che abbiate già risolto questo indovinello", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
@@ -300,7 +300,7 @@ def handle(msg):
                     ridd_id = next_riddle_id
                     riddle = get_riddle(ridd_id)
                 else:
-                    bot.sendMessage(chat_id, "Sembra che tu abbia risolto tutti gli indovinelli! Torna al punto d'incontro!", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+                    team_end_game(chat_id)
                     return
             # invio di un QR CODE
             else:
@@ -368,7 +368,32 @@ def handle(msg):
         else:
             bot.sendMessage(chat_id, "Non sei registrato! Usa il comando /iscrivimi")
 
+def team_end_game(chat_id):
+    if chat_id == get_winning_team_id():
+        send_splitted_message(bot, chat_id, "Siete riusciti a liberare il potere! Andate allo stand dell’IRF a scoprire cosa vi attende!---http://bit.ly/2lJOuu6")
+        admin_bot = telepot.Bot(TOKEN_ADMIN)
+        for admin in get_admins():
+            admin_bot.sendMessage(admin[0], "La squadra {} ({}) ha vinto!".format(get_team(chat_id)[0], chat_id))
+    else:
+        send_splitted_message(bot, chat_id, "Hai completato tutte le prove ma purtroppo sei arrivato troppo tardi 🙁---Goditi comunque la serata e grazie per aver partecipato!")
+    
+    # invio credits
+    send_splitted_message(bot, chat_id, "Questa caccia al tesoro è stata realizzata dagli studenti del biennio specialistico dell’ISIA Pescara Design www.isiadesign.pe.it\ncon la preziosa collaborazione tecnica offerta da BeFair https://www.befair.it/")
 
+def get_winning_team_id():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT ridd_id FROM riddle ORDER BY sorting DESC LIMIT 1;")
+    last_riddle_id = c.fetchone()[0]
+    c.execute("SELECT team FROM solved_riddle WHERE riddle='{}' ORDER BY timestamp LIMIT 1;".format(last_riddle_id))
+    winner = c.fetchone()
+    if winner:
+        winner_id = winner[0]
+    else:
+        winner_id = None
+    conn.close()
+    return winner_id
+    
 def send_splitted_message(bot, chat_id, message, markup=None):
     messages = [x.strip() for x in message.split('---')]
     last_message_with_markup = messages.pop()
