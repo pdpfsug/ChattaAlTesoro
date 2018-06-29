@@ -25,6 +25,7 @@ from settings import TOKEN_ADMIN, DB_NAME, PASSWORD, TOKEN_GAME
 USER_STATE = {}
 TMP_RIDDLE = {}
 CURRENT_ADMIN = []
+SLEEP_TIME = 6
 
 
 def handle(msg):
@@ -131,12 +132,16 @@ def handle(msg):
                 c.execute(query)
                 data = c.fetchall()
                 conn.close()
-                coords_first_position = [42.472441, 14.20929]
+                coords_first_position = [42.47603, 14.20775]
                 bot.sendMessage(chat_id, "Eccovi! Sono felice che siate tornati. Siete pronti?\n"
                     "Io no... ma al bando la paura!\n"
                     "Iniziamo insieme questa avventura!")
+                sleep(SLEEP_TIME)
+                bot.sendMessage(chat_id, "In ogni tappa dovrete cercare un QRcode, fargli una foto e inviarmela. Solo così potrete andare avanti e risolvere il mistero.\n")
+                sleep(SLEEP_TIME)
                 bot.sendMessage(chat_id, "Abbiamo a disposizione solo quattro ore, potete controllare il tempo rimanente scrivendo /tempo.\n"
                     "Il primo luogo da raggiungere non è molto lontano da voi.\n")
+                sleep(SLEEP_TIME)
                 bot.sendMessage(chat_id, "Vi dico solo “Se lu mar è bell lu gabbian...frect!”\n"
                     "Che l’avventura abbia inizio! In bocca allo scoiatt… ehm, al lupo! Conto su di voi.")
                 bot.sendLocation(chat_id, coords_first_position[0], coords_first_position[1])
@@ -144,12 +149,14 @@ def handle(msg):
                     game_bot.sendMessage(team[0], "Eccovi! Sono felice che siate tornati. Siete pronti?\n"
                         "Io no... ma al bando la paura!\n"
                         "Iniziamo insieme questa avventura!")
+                    sleep(SLEEP_TIME)
                     game_bot.sendMessage(team[0], "Abbiamo a disposizione solo quattro ore, potete controllare il tempo rimanente scrivendo /tempo.\n"
                         "Il primo luogo da raggiungere non è molto lontano da voi.\n")
+                    sleep(SLEEP_TIME)
                     game_bot.sendMessage(team[0], "Vi dico solo “Se lu mar è bell lu gabbian...frect!”\n"
                         "Che l’avventura abbia inizio! In bocca allo scoiatt… ehm, al lupo! Conto su di voi.")
                     game_bot.sendLocation(team[0], coords_first_position[0], coords_first_position[1])
-                    
+
                 bot.sendMessage(chat_id, "(notifica inviata ai giocatori)")
 
             # Stop Treasure Hunt
@@ -190,15 +197,15 @@ def handle(msg):
                 TMP_RIDDLE['sol'] = split[4]
 
                 USER_STATE[chat_id] = 40
-                
+
                 bot.sendMessage(chat_id, "Cosa devo dire al giocatore quando risponde correttamente?")
-            
+
             elif USER_STATE[chat_id] == 40:
                 TMP_RIDDLE['msg_success'] = command_input
-                
+
                 USER_STATE[chat_id] = 41
                 bot.sendMessage(chat_id, "Cosa devo dire al giocatore quando sbaglia?")
-                
+
             elif USER_STATE[chat_id] == 41:
                 TMP_RIDDLE['msg_error'] = command_input
                 USER_STATE[chat_id] = 4
@@ -267,7 +274,7 @@ def handle(msg):
             do_csv_import(csvfile, chat_id)
 
         bot.sendMessage(chat_id, "Importazione quiz terminata correttamente!")
-        
+
         USER_STATE[chat_id] = 0
 
 def get_teams():
@@ -291,7 +298,7 @@ def add_riddle(ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5,
     query = ('INSERT INTO riddle(ridd_id, kind, question, answer1, answer2, answer3, answer4, answer5, answer6, '
                 'solution, latitude, longitude, help_img, msg_success, msg_error, sorting) '
                 'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-    
+
     c.execute(query, (ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6,
                                     solution, lat, lon, img_name, msg_success, msg_error, sorting))
     conn.commit()
@@ -357,11 +364,11 @@ def do_csv_import(csvfile, chat_id):
     reader = csv.reader(csvfile, delimiter=',') #, quoting=csv.QUOTE_NONNUMERIC)
     prev_kind = ''
     for i, row in enumerate(reader):
-        if not i: 
+        if not i:
             # skip the header row
             continue
-        
-        (ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6, 
+
+        (ridd_id, kind, text, answer1, answer2, answer3, answer4, answer5, answer6,
             solution, lat, lon, img_name, msg_success, msg_error, sorting) = row
 
         # Create the new riddle, keep values if found,
@@ -417,5 +424,3 @@ if __name__ == "__main__":
             sleep(1)
     finally:
         os.unlink(PIDFILE)
-
-

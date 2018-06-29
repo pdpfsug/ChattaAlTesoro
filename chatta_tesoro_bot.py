@@ -25,7 +25,7 @@ from telepot.namedtuple import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 class State(object):
 
-    def __init__(self, value, riddle_id='', solution='', kind=None, 
+    def __init__(self, value, riddle_id='', solution='', kind=None,
                     msg_success='Esatto!', msg_error="Errore!"):
         self.state = value
         self.riddle_id = riddle_id
@@ -75,12 +75,12 @@ def handle(msg):
             #USER_STATE[chat_id] = 2
             USER_STATE[chat_id] = State(
                 value=2, riddle_id=next_riddle_id, solution=riddle[8],
-                kind=riddle[1], msg_success=riddle[9] or "Esatto!", 
+                kind=riddle[1], msg_success=riddle[9] or "Esatto!",
                 msg_error=riddle[10])
         else:
             USER_STATE[chat_id] = 0
 
-    # Check if user is banned    
+    # Check if user is banned
     try:
         if TEMPS[chat_id]['ban_time'] > TEMPS['time']:
             bot.sendMessage(chat_id, "Riprova tra {0} secondi".format(TEMPS[chat_id]['ban_time'] - TEMPS['time']))
@@ -95,13 +95,15 @@ def handle(msg):
         if command_input == '/start':
             bot.sendMessage(chat_id, "Ciao! Se stai leggendo questo messaggio, vuol dire che sei passato davanti allo scoiattolo. Prima di continuare ascolta bene...")
             bot.sendMessage(chat_id, "https://youtu.be/wRMaGacdics")
+            sleep(SLEEP_TIME)
             bot.sendMessage(chat_id, "Esatto, ho bisogno che tu e i tuoi amici mi aiutiate.\n"
-                "Potete farlo! Basta formare un gruppo che va dai 2 ai 5 componenti.\n"
-                "Usa il comando /iscrivimi per registrare il tuo gruppo, proseguendo con la registrazione dichiari di aver letto e accettato i termini del /regolamento")
+                "Potete farlo! Basta formare un gruppo che va dai 2 ai 5 componenti.")
+            sleep(SLEEP_TIME)
+            bot.sendMessage(chat_id, "Usa il comando /iscrivimi per registrare il tuo gruppo, proseguendo con la registrazione dichiari di aver letto e accettato i termini del /regolamento")
             return
-            
+
         if command_input == '/regolamento':
-            bot.sendMessage(chat_id, "Vorrei darvi anche delle raccomandazioni.\n" 
+            bot.sendMessage(chat_id, "Vorrei darvi anche delle raccomandazioni.\n"
                 "Contenuto del regolamento:\n\n"
                 "1- L’obiettivo del gioco è ritrovare le chiavi rubate\n"
                 "2- Il gruppo è rappresentato dal leader, la caccia al tesoro verrà svolta solo attraverso lo smartphone del leader\n"
@@ -118,7 +120,7 @@ def handle(msg):
             bot.sendMessage(chat_id, "/iscrivimi - Iscrivi la tua squadra\n"
                 "/tempo - Quanto manca alla fine della caccia al tesoro\n"
                 "/regolamento - Regolamento di gioco\n"
-                "/aiuto - Invia suggerimento\n")
+                "/aiuto - Elenco dei comandi\n")
             return
 
         if command_input == '/id':
@@ -142,8 +144,8 @@ def handle(msg):
             else:
                 USER_STATE[chat_id] = 1
                 bot.sendMessage(chat_id, "Fantastico! Grazie 😉\n"
-                    "Per poter proseguire inviatemi il nome del vostro gruppo (esempio: “teamnomegruppo”).\n"
-                    "Ragazzi, siate creativi nella scelta del nome, vi renderà unici!")
+                    "Per poter proseguire inviatemi il nome del vostro gruppo (esempio: “Nomegruppo”).\n"
+                    "Siate creativi nella scelta del nome, vi renderà unici!")
             return
 
         # Register Team - 2
@@ -160,7 +162,7 @@ def handle(msg):
                 pass
 
             if add_team(chat_id, command_input, lname):
-                bot.sendMessage(chat_id, "{} è ufficiale: siete in gioco!\nPer suggellare la nostra alleanza, inviatemi una vostra foto insieme allo scoiattolo, può essere un selfie o potete chiedere a qualcuno di farvela scattare, l’importante è che facciate una bella smorfia di gruppo.".format(command_input))
+                bot.sendMessage(chat_id, "team{} è ufficiale: siete in gioco!\nPer suggellare la nostra alleanza, inviatemi una vostra foto insieme allo scoiattolo, può essere un selfie o potete chiedere a qualcuno di farvela scattare, l’importante è che facciate una bella smorfia di gruppo.".format(command_input))
             else:
                 bot.sendMessage(chat_id, "Sembra che tu sia già registrato, in caso contrario parla con qualcuno dello staff!")
 
@@ -178,7 +180,7 @@ def handle(msg):
                     user_given_solution = command_input[0]
                 elif kind == 'open':
                     user_given_solution = command_input
-                
+
                 if user_given_solution.upper() == solution.upper():
                     # Mark as solved
                     USER_STATE[chat_id] = State(value=0)
@@ -240,12 +242,13 @@ def handle(msg):
         del(photo_file)
 
         bot.sendMessage(chat_id, "Molto bene! Condividetela sui vostri profili social con gli hashtag #seguiloscoiattolo #team{}.\nFatela girare, la foto che riceverà  più like entro le 19:00 del 29 giugno vincerà una vacanza con me! 😛".format(get_team(chat_id)[0]))
-        bot.sendMessage(chat_id, "Ragazzi ora più di questo non posso dirvi...\nIl resto lo scoprirete tornando qui, a Piazza Salotto o Cascella, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
+        sleep(SLEEP_TIME)
+        bot.sendMessage(chat_id, "Ora più di questo non posso dirvi... il resto lo scoprirete tornando qui, a Piazza Salotto, alle 15:00 in punto. Non mi abbandonate e tenetevi pronti!")
         USER_STATE[chat_id] = State(value=0)
 
     # foto ma il gioco non è iniziato ancora
     elif content_type == 'photo' and is_registred(chat_id) and not game_started():
-        bot.sendMessage(chat_id, "La partita non è ancora iniziata!\nDevi attendere l'inizio per iniziare a giocare, ti arriverà una notifica quando sarà il momento.")
+        bot.sendMessage(chat_id, "La caccia al tesoro non è ancora iniziata!\nDevi attendere l'inizio per iniziare a giocare, ti arriverà una notifica quando sarà il momento.")
         return
 
     # invio di una foto durante il gioco
@@ -265,7 +268,7 @@ def handle(msg):
             image = Image.open(f)
             image.load()
 
-        try: 
+        try:
             state = USER_STATE[chat_id]
             # invio di una foto richiesta dal gioco
             if state.kind == "photo":
@@ -300,12 +303,12 @@ def handle(msg):
                     bot.sendMessage(chat_id, "Sembra che tu abbia risolto tutti gli indovinelli! Torna al punto d'incontro!", reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
                     return
             # invio di un QR CODE
-            else:    
+            else:
 
                 # Decode QR
                 codes = zbarlight.scan_codes('qrcode', image)
 
-                # Get riddle and send it 
+                # Get riddle and send it
                 try:
                     ridd_id = codes[0].decode()
                 except TypeError:
@@ -327,7 +330,7 @@ def handle(msg):
             if riddle:
                 USER_STATE[chat_id] = State(
                     value=2, riddle_id=ridd_id, solution=riddle[8],
-                    kind=riddle[1], msg_success=riddle[9] or "Esatto!", 
+                    kind=riddle[1], msg_success=riddle[9] or "Esatto!",
                     msg_error=riddle[10])
 
                 # Save answers for next message
@@ -481,7 +484,7 @@ def get_next_riddle_id(chat_id):
         return next_riddle_id[0]
     else:
         return None
-    
+
     conn.close()
     return next_riddle_id
 
