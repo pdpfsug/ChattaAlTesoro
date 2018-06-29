@@ -395,7 +395,8 @@ def send_splitted_message(bot, chat_id, message, markup=None):
     last_message_with_markup = last_message_with_markup.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
     for message in messages:
         message = message.replace('$$$NOMESQUADRA$$$', get_team(chat_id)[0])
-        bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
+        if message:
+            bot.sendMessage(chat_id, message, reply_markup=ReplyKeyboardRemove(remove_keyboard=True))
         bot.sendChatAction(chat_id, 'typing')
         sleep(SLEEP_TIME)
     bot.sendMessage(chat_id, last_message_with_markup, reply_markup=markup)
