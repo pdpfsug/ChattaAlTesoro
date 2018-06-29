@@ -103,17 +103,12 @@ def handle(msg):
             return
 
         if command_input == '/regolamento':
-            bot.sendMessage(chat_id, "Vorrei darvi anche delle raccomandazioni.\n"
-                "Contenuto del regolamento:\n\n"
-                "1- L’obiettivo del gioco è ritrovare le chiavi rubate\n"
-                "2- Il gruppo è rappresentato dal leader, la caccia al tesoro verrà svolta solo attraverso lo smartphone del leader\n"
-                "3- Per poter giocare, assicuratevi di avere lo smartphone carico\n"
-                "4- Utilizzate la mappa per individuare le tappe\n"
-                "5- In ogni tappa troverete una prova, dovrete risolverlo per ricevere un indizio e sbloccare la tappa successiva\n"
-                "6- Le tappe sono sequenziali: non potete saltare alcuna tappa!\n"
-                "7- I team più in gamba verranno ricompensati. Come? Lo scoprirete giocando ;)\n\n"
+            bot.sendMessage(chat_id, "REGOLAMENTO\n"
+                "Vorrei darvi anche delle raccomandazioni.\n\n"
+                "Contenuto del regolamento:\n"
+                "https://bit.ly/2MB4YQD\n\n"
                 "Ultimo consiglio: dovrete restare sempre compatti, l’unione fa la forza... ricordatelo sempre!\n\n"
-                "I primi 3 a trovare le chiavi, vincono la caccia al tesoro!")
+                "Il primo gruppo a trovare le chiavi vince la caccia al tesoro!\n")
             return
 
         if command_input == '/help' or command_input == '/aiuto':
