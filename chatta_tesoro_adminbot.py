@@ -81,6 +81,24 @@ def handle(msg):
         # Commands reserved to current admin
         else:
 
+            if command_input == '/broadcast':
+                bot.sendMessage(chat_id, "Il prossimo messaggio che mi scriverai sarà inviato a tutti i giocatori.")
+                USER_STATE[chat_id] = 77
+                return
+
+            if USER_STATE[chat_id] == 77:
+                game_bot = telepot.Bot(TOKEN_GAME)
+                conn = sqlite3.connect(DB_NAME)
+                c = conn.cursor()
+                query = 'SELECT chat_id FROM team'
+                c.execute(query)
+                data = c.fetchall()
+                conn.close()
+                for team in data:
+                    game_bot.sendMessage(team[0], command_input)
+                bot.sendMessage(chat_id, "broadcast inviato ai giocatori!")
+                USER_STATE[chat_id] = 0
+
             if command_input == '/squadre':
                 data = get_teams()
                 bot.sendMessage(chat_id, 'Ecco la lista delle squadre registrate:')
