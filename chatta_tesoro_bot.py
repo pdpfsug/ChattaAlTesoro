@@ -106,7 +106,7 @@ def handle(msg):
             bot.sendMessage(chat_id, "REGOLAMENTO\n"
                 "Vorrei darvi anche delle raccomandazioni.\n\n"
                 "Contenuto del regolamento:\n"
-                "https://bit.ly/2MB4YQD\n\n"
+                "http://bit.ly/slsregolamento\n\n"
                 "Ultimo consiglio: dovrete restare sempre compatti, l’unione fa la forza... ricordatelo sempre!\n\n"
                 "Il primo gruppo a trovare le chiavi vince la caccia al tesoro!\n")
             return
@@ -373,7 +373,7 @@ def team_end_game(chat_id):
         send_splitted_message(bot, chat_id, "Hai completato tutte le prove ma purtroppo sei arrivato troppo tardi 🙁---Goditi comunque la serata e grazie per aver partecipato!")
     
     # invio credits
-    send_splitted_message(bot, chat_id, "Questa caccia al tesoro è stata realizzata dagli studenti del biennio specialistico dell’ISIA Pescara Design www.isiadesign.pe.it\ncon la preziosa collaborazione tecnica offerta da BeFair https://www.befair.it/")
+    send_splitted_message(bot, chat_id, "Questa caccia al tesoro è stata realizzata dagli studenti del biennio specialistico dell’ISIA Pescara Design www.isiadesign.pe.it\ncon la preziosa collaborazione tecnica offerta da beFair https://www.befair.it/")
 
 def get_winning_team_id():
     conn = sqlite3.connect(DB_NAME)
