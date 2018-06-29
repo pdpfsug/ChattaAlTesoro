@@ -285,7 +285,7 @@ def handle(msg):
                     # Inviare tramite file_id non funziona (Bad Request: wrong file identifier/HTTP URL specified)
                     # https://core.telegram.org/bots/api#sending-files
                     # file_id is unique for each individual bot and can't be transferred from one bot to another
-                admin_bot.sendPhoto(msg_to, photo_file, caption="Risposta-foto del team {}".format(team_name[0]))
+                admin_bot.sendPhoto(msg_to, photo_file, caption="Risposta-foto del team {} [riddle: {}]".format(team_name[0], state.riddle_id))
                 del(photo_file)
 
                 # Segna il riddle come risolto
