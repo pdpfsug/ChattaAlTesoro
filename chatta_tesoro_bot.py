@@ -107,9 +107,7 @@ def handle(msg):
             bot.sendMessage(chat_id, "REGOLAMENTO\n"
                 "Vorrei darvi anche delle raccomandazioni.\n\n"
                 "Contenuto del regolamento:\n"
-                "http://bit.ly/slsregolamento\n\n"
-                "Ultimo consiglio: dovrete restare sempre compatti, l’unione fa la forza... ricordatelo sempre!\n\n"
-                "Il primo gruppo a trovare le chiavi vince la caccia al tesoro!\n")
+                "http://bit.ly/slsregolamento\n\n")
             return
 
         if command_input == '/help' or command_input == '/aiuto':
@@ -365,6 +363,8 @@ def handle(msg):
             bot.sendMessage(chat_id, "Non sei registrato! Usa il comando /iscrivimi")
 
 def team_end_game(chat_id):
+
+    sleep(SLEEP_TIME)
     if chat_id == get_winning_team_id():
         send_splitted_message(bot, chat_id, "Siete riusciti a liberare il potere! Andate allo stand dell’IRF a scoprire cosa vi attende!---http://bit.ly/2lJOuu6")
         admin_bot = telepot.Bot(TOKEN_ADMIN)
@@ -372,8 +372,9 @@ def team_end_game(chat_id):
             admin_bot.sendMessage(admin[0], "La squadra {} ({}) ha vinto!".format(get_team(chat_id)[0], chat_id))
     else:
         send_splitted_message(bot, chat_id, "Hai completato tutte le prove ma purtroppo sei arrivato troppo tardi 🙁---Goditi comunque la serata e grazie per aver partecipato!")
-    
+
     # invio credits
+    sleep(SLEEP_TIME)
     send_splitted_message(bot, chat_id, "Questa caccia al tesoro è stata realizzata dagli studenti del biennio specialistico dell’ISIA Pescara Design www.isiadesign.pe.it\ncon la preziosa collaborazione tecnica offerta da beFair https://www.befair.it/")
 
 def get_winning_team_id():
@@ -389,7 +390,7 @@ def get_winning_team_id():
         winner_id = None
     conn.close()
     return winner_id
-    
+
 def send_splitted_message(bot, chat_id, message, markup=None):
     messages = [x.strip() for x in message.split('---')]
     last_message_with_markup = messages.pop()
