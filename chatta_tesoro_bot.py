@@ -15,6 +15,7 @@ import uuid
 import sqlite3
 import io
 import datetime
+import subprocess
 from time import time, sleep
 import telepot
 import zbarlight
@@ -562,8 +563,13 @@ if __name__ == "__main__":
 
     # Check if PID exist
     if os.path.isfile(PIDFILE):
-        print("%s already exists, exiting!" % PIDFILE)
-        sys.exit()
+        try:
+            subprocess.check_call(["/usr/bin/pgrep", "-F", PIDFILE])
+        except subprocess.CalledProcessError:
+            os.remove(PIDFILE)
+        else:
+            print("Process GameBot is already running (see %s), exiting!" % PIDFILE)
+            sys.exit(100)
 
     # Create PID file
     with open(PIDFILE, 'w') as f:

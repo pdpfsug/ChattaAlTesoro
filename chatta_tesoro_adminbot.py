@@ -19,6 +19,7 @@ import sqlite3
 from time import sleep
 import qrcode
 import telepot
+import subprocess
 from settings import TOKEN_ADMIN, DB_NAME, PASSWORD, TOKEN_GAME
 
 # Variables
@@ -422,8 +423,13 @@ if __name__ == "__main__":
 
     # Check if PID exist
     if os.path.isfile(PIDFILE):
-        print("%s already exists, exiting!" % PIDFILE)
-        sys.exit()
+        try:
+            subprocess.check_call(["/usr/bin/pgrep", "-F", PIDFILE])
+        except subprocess.CalledProcessError:
+            os.remove(PIDFILE)
+        else:
+            print("Process AdminBot is already running (see %s), exiting!" % PIDFILE)
+            sys.exit(100)
 
     # Create PID file
     with open(PIDFILE, 'w') as f:
